@@ -13,12 +13,15 @@ Generate voiceover narration from **text strips** directly in the **Video Sequen
 - Cleanup unused audio files
 - Copy audio path to clipboard
 
-## Install
+---
 
-1. Install `pyttsx3`:
-   ```bash
-   <blender-python> -m pip install pyttsx3
-   ```
+### 🐧 Linux Users: Additional Step
+
+Make sure you have `espeak` installed:
+
+```bash
+sudo apt install espeak libespeak1
+```
 
 ## 🔧 Installation: Required Dependency
 
@@ -58,25 +61,15 @@ If you prefer the terminal, run this command (adjust path to your Blender versio
 
 ---
 
-### 🐧 Linux Users: Additional Step
+### Option 3: Use `--python-expr` to Install `pyttsx3`
 
-Make sure you have `espeak` installed:
-
-```bash
-sudo apt install espeak libespeak1
-```
-
----
-
-## ✅ How to Use `--python-expr` to Install `pyttsx3`
-
-### 🔧 Command (One-Liner)
+#### 🔧 Command (One-Liner)
 
 ```bash
 blender --background --python-expr "import subprocess, sys; subprocess.run([sys.executable, '-m', 'pip', 'install', 'pyttsx3'])"
 ```
 
-### 💡 Breakdown
+#### 💡 Breakdown
 
 | Part                  | Purpose                                               |
 | --------------------- | ----------------------------------------------------- |
@@ -124,7 +117,7 @@ Or if using a downloaded version:
 
 ---
 
-## ✅ Verify It Worked
+### ✅ Verify It Worked
 
 Run this command to test:
 

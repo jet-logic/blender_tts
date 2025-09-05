@@ -5,9 +5,12 @@ build/
 dist/
 wheels/
 *.egg-info
-
 # Virtual environments
 .venv
-
+*.blend
+*.blend1
+*.blend2
 *.zip
+.DS_Store
+Thumbs.db
 .vscode

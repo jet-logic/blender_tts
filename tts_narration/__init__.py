@@ -1,45 +1,98 @@
 """
 Blender VSE Text-to-Speech Narration Add-on
 Generates audio from text strips with unique IDs, refresh, and cleanup.
+Supports multiple TTS engines via configurable voice profiles.
 """
 
 bl_info = {
     "name": "VSE Text-to-Speech Narration",
     "author": "Jet-Logic",
-    "version": (0, 1, 0),
+    "version": (0, 2, 0),  # Updated version
     "blender": (3, 0, 0),
     "location": "Sequencer > Add > Text-to-Speech",
-    "description": "Generate narration from text strips with ID, refresh, and cleanup",
-    "warning": "",
+    "description": "Generate narration from text strips with ID, refresh, and cleanup. Supports multiple TTS engines.",
+    "warning": "Requires TTS engine libraries (e.g., pyttsx3, gTTS) installed in Blender's Python environment.",
     "wiki_url": "",
     "tracker_url": "",
     "category": "Sequencer",
 }
 
-# Import the main module (same file)
 import bpy
 import os
 import time
 import uuid
 import platform
+import importlib
+import sys
 
-try:
-    import pyttsx3
-except ImportError:
-    pyttsx3 = None
-
-# Global engine
-tts_engine = None
+# --- Core Configuration and Utilities ---
 
 
-def get_tts_engine():
-    global tts_engine
-    if tts_engine is None and pyttsx3:
-        try:
-            tts_engine = pyttsx3.init()
-        except Exception as e:
-            print(f"TTS Engine init failed: {e}")
-    return tts_engine
+def get_config_directory():
+    """Get the standard config directory for the add-on."""
+    home = os.path.expanduser("~")
+    if os.name == "nt":  # Windows
+        config_dir = os.path.join(home, "AppData", "Roaming")
+    else:  # Linux/macOS
+        config_dir = os.path.join(home, ".config")
+    addon_config_dir = os.path.join(config_dir, "blender_tts")
+    os.makedirs(addon_config_dir, exist_ok=True)
+    return addon_config_dir
+
+
+def get_voices_config_path():
+    """Get the path to the voices.toml file."""
+    config_dir = get_config_directory()
+    return os.path.join(config_dir, "voices.toml")
+
+
+def load_voices_config():
+    """Load voice profiles from voices.toml."""
+    try:
+        import tomllib
+    except ImportError:
+        print(
+            "Error: 'tomllib' library is required for voice configuration. Please install it in Blender's Python environment."
+        )
+        return {}
+
+    config_path = get_voices_config_path()
+    if not os.path.exists(config_path):
+        create_default_voices_config(config_path)
+        print(f"Created default voices config at {config_path}")
+
+    try:
+        with open(config_path, "rb") as f:
+            config = tomllib.load(f)
+        return config
+    except Exception as e:
+        print(f"Error loading voices config from {config_path}: {e}")
+        return {}
+
+
+def create_default_voices_config(config_path):
+    """Create a default/example voices.toml file."""
+    default_config = """# Example Voice Configuration for Blender TTS Add-on
+[pyttsx3-female]
+name="Female (default)"
+handler = "pyttsx3"
+params={volume = 1.0,voice_gender = "female"}
+
+[pyttsx3-male]
+handler="pyttsx3"
+name="Male (default)"
+params={volume = 1.0,voice_gender = "male"}
+
+[gtts-default]
+name="GTTS (en)"
+handler="gtts"
+params={lang = "en"}
+"""
+    try:
+        with open(config_path, "w") as f:
+            f.write(default_config.strip())
+    except Exception as e:
+        print(f"Error creating default config file: {e}")
 
 
 def get_default_output_dir():
@@ -94,38 +147,91 @@ class VSE_OT_generate_narration(bpy.types.Operator):
     bl_label = "Generate Narration from Text"
     bl_options = {"REGISTER", "UNDO"}
 
-    rate: bpy.props.IntProperty(name="Speech Rate", default=150, min=50, max=300)
-    volume: bpy.props.FloatProperty(name="Volume", default=1.0, min=0.0, max=1.0)
-    voice_type: bpy.props.EnumProperty(
-        name="Voice",
-        items=[("MALE", "Male", ""), ("FEMALE", "Female", "")],
-        default="MALE",
+    # --- Properties ---
+    def get_voice_profiles(self, context):
+        voices_config = load_voices_config()
+        items = [
+            (k, v.get("name", k), f"Voice profile: {k}")
+            for (k, v) in voices_config.items()
+        ]
+        if not items:
+            items = [
+                (
+                    "NONE",
+                    "No Profiles Found",
+                    "Please configure voices in ~/.config/blender_tts/voices.toml",
+                )
+            ]
+        return items
+
+    # Remove old voice_type enum
+    voice_profile: bpy.props.EnumProperty(
+        name="Voice Profile",
+        description="Select a configured voice profile",
+        items=get_voice_profiles,
     )
+    # Rate and Volume can be kept for *additional* per-generation control if desired,
+    # but the primary settings come from the voice profile config.
+    # rate: bpy.props.IntProperty(name="Speech Rate", default=150, min=50, max=300)
+    # volume: bpy.props.FloatProperty(name="Volume", default=1.0, min=0.0, max=1.0)
 
     def execute(self, context):
-        if not pyttsx3:
-            self.report({"ERROR"}, "pyttsx3 not installed.")
+        # --- Load Configuration ---
+        voices_config = load_voices_config()
+        if self.voice_profile not in voices_config:
+            self.report(
+                {"ERROR"}, f"Voice profile '{self.voice_profile}' not found in config."
+            )
             return {"CANCELLED"}
 
-        engine = get_tts_engine()
-        if not engine:
+        selected_voice_config = voices_config[
+            self.voice_profile
+        ].copy()  # Work on a copy
+        handler_name = selected_voice_config.pop(
+            "handler", None
+        )  # Remove 'handler' from kwargs
+        if not handler_name:
+            self.report(
+                {"ERROR"},
+                f"Handler not specified for voice profile '{self.voice_profile}'.",
+            )
             return {"CANCELLED"}
 
-        engine.setProperty("rate", self.rate)
-        engine.setProperty("volume", self.volume)
-
-        voices = engine.getProperty("voices")
-        for v in voices:
-            if (self.voice_type == "FEMALE" and "female" in v.name.lower()) or (
-                self.voice_type == "MALE" and "male" in v.name.lower()
-            ):
-                engine.setProperty("voice", v.id)
-                break
-
+        # --- Preferences and Output ---
         prefs = context.preferences.addons[__name__].preferences
         output_dir = prefs.output_directory or get_default_output_dir()
         os.makedirs(output_dir, exist_ok=True)
 
+        # --- Dynamic Handler Import and Execution ---
+        handler_instance = None
+        try:
+            # Import the handler module from the 'handlers' subpackage
+            handler_module_name = f"tts_narration.handlers.{handler_name}"
+            if handler_module_name in sys.modules:
+                importlib.reload(sys.modules[handler_module_name])
+            handler_module = importlib.import_module(handler_module_name)
+            HandlerClass = getattr(handler_module, "Handler")
+
+            # Instantiate the handler with config kwargs (excluding 'handler')
+            handler_instance = HandlerClass(**selected_voice_config.get("params", {}))
+
+        except ImportError as e:
+            self.report(
+                {"ERROR"},
+                f"Handler module '{handler_module_name}' could not be imported. Is the library installed? Error: {e}",
+            )
+            return {"CANCELLED"}
+        except AttributeError:
+            self.report(
+                {"ERROR"},
+                f"Handler class 'Handler' not found in module '{handler_module_name}'.",
+            )
+            return {"CANCELLED"}
+        except Exception as e:
+            self.report({"ERROR"}, f"Error initializing handler '{handler_name}': {e}")
+            return {"CANCELLED"}
+
+        # --- Generate Audio for each selected text strip ---
         created = 0
         for strip in context.selected_sequences:
             if strip.type != "TEXT" or not strip.text.strip():
@@ -133,10 +239,10 @@ class VSE_OT_generate_narration(bpy.types.Operator):
 
             filepath = generate_audio_filename(output_dir, strip)
             try:
-                engine.save_to_file(strip.text, filepath)
-                engine.runAndWait()
+                # Call the handler's synthesize method
+                success = handler_instance.synthesize(strip.text, filepath)
 
-                if os.path.exists(filepath):
+                if success and os.path.exists(filepath):
                     channel = strip.channel + 1
                     frame_start = strip.frame_final_start
                     sound_name = f"Narr_{strip['tts_id']}"
@@ -152,15 +258,29 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                         frame_start=frame_start,
                     )
                     created += 1
+                    self.report(
+                        {"INFO"},
+                        f"Generated narration for '{strip.name}' using '{self.voice_profile}'",
+                    )
                 else:
-                    self.report({"ERROR"}, f"Failed to create: {filepath}")
-            except Exception as e:
-                self.report({"ERROR"}, f"Error on '{strip.name}': {str(e)}")
+                    self.report(
+                        {"ERROR"},
+                        f"Handler failed to generate audio for '{strip.name}' with '{self.voice_profile}'",
+                    )
 
-        self.report({"INFO"}, f"Generated {created} narration(s)")
+            except Exception as e:
+                self.report(
+                    {"ERROR"}, f"Error generating audio for '{strip.name}': {e}"
+                )
+
+        self.report(
+            {"INFO"}, f"Generated {created} narration(s) using '{self.voice_profile}'"
+        )
         return {"FINISHED"}
 
     def invoke(self, context, event):
+        # Repopulate enum items in case config changed?
+        # self.voice_profile = "" # Reset?
         return context.window_manager.invoke_props_dialog(self)
 
 
@@ -170,17 +290,24 @@ class VSE_OT_refresh_narration(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        found = 0
-        regenerated = 0
-        for strip in context.selected_sequences:
-            if strip.type != "TEXT" or "tts_id" not in strip:
-                continue
-            found += 1
-            old_audio = find_existing_audio_for_text(context.scene, strip)
-            if old_audio:
-                bpy.ops.sequencer.generate_narration("INVOKE_DEFAULT")
-                regenerated += 1
-        self.report({"INFO"}, f"Refreshed {regenerated} of {found} text strips")
+        # This operator now needs to know which voice profile was used originally.
+        # A simple approach: Re-run the main generate operator.
+        # A more advanced approach: Store the profile name on the text strip or find the audio strip's source.
+        # For simplicity, re-invoke the generate dialog. User needs to select the same profile.
+        bpy.ops.sequencer.generate_narration("INVOKE_DEFAULT")
+        # Original logic was simpler but also re-invoked the dialog.
+        # found = 0
+        # regenerated = 0
+        # for strip in context.selected_sequences:
+        #     if strip.type != "TEXT" or "tts_id" not in strip:
+        #         continue
+        #     found += 1
+        #     old_audio = find_existing_audio_for_text(context.scene, strip)
+        #     if old_audio:
+        #         # This re-invokes the dialog, user needs to select voice again.
+        #         bpy.ops.sequencer.generate_narration("INVOKE_DEFAULT")
+        #         regenerated += 1
+        # self.report({"INFO"}, f"Refreshed {regenerated} of {found} text strips")
         return {"FINISHED"}
 
 
@@ -207,10 +334,13 @@ class VSE_OT_cleanup_narration_files(bpy.types.Operator):
         for f in files:
             filepath = os.path.join(output_dir, f)
             if "_" in f:
-                file_id = f.split("_")[1]
+                file_id = f.split("_")[1]  # Extract ID from filename: narration_<id>_
                 if file_id not in used_ids:
-                    os.remove(filepath)
-                    deleted += 1
+                    try:
+                        os.remove(filepath)
+                        deleted += 1
+                    except OSError as e:
+                        self.report({"WARNING"}, f"Could not delete {filepath}: {e}")
 
         self.report({"INFO"}, f"Deleted {deleted} unused audio files")
         return {"FINISHED"}
@@ -231,7 +361,7 @@ class VSE_OT_copy_audio_path(bpy.types.Operator):
                     if strip["tts_id"] in f
                 ]
                 if files:
-                    latest = sorted(files)[-1]
+                    latest = sorted(files)[-1]  # Get most recent file
                     path = os.path.join(output_dir, latest)
                     context.window_manager.clipboard = path
                     self.report({"INFO"}, f"Copied: {path}")
@@ -254,7 +384,10 @@ class SEQUENCER_PT_tts_panel(bpy.types.Panel):
         selected = context.selected_sequences
 
         col = layout.column(align=True)
-        col.operator("sequencer.generate_narration", icon="RENDER_STILL")
+        # The operator will show the voice_profile enum in its dialog
+        col.operator_menu_enum("sequencer.generate_narration", "voice_profile")
+        # Or use operator if you want the dialog on button click:
+        # col.operator("sequencer.generate_narration", icon="RENDER_STILL")
 
         has_text = any(s.type == "TEXT" and "tts_id" in s for s in selected)
         if has_text:
@@ -278,6 +411,9 @@ class TTSNarrationPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.prop(self, "output_directory")
         layout.label(text=f"Default: {get_default_output_dir()}")
+        layout.operator("wm.url_open", text="Open Config Folder").url = (
+            f"file://{get_config_directory()}"
+        )
 
 
 # --- REGISTER ---
@@ -305,7 +441,8 @@ def unregister():
 
 
 def menu_func(self, context):
-    self.layout.operator(VSE_OT_generate_narration.bl_idname)
+    self.layout.operator_menu_enum("sequencer.generate_narration", "voice_profile")
+    # Or: self.layout.operator(VSE_OT_generate_narration.bl_idname)
 
 
 # Module reload support

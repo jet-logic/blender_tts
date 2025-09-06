@@ -60,17 +60,17 @@ def create_default_voices_config(config_path):
     default_config = """# Example Voice Configuration for Blender TTS Add-on
 [pyttsx3-female]
 name="Female (default)"
-handler = "pyttsx3"
+handler = ".pyttsx3"
 params={volume = 1.0, voice_gender = "female"}
 
 [pyttsx3-male]
-handler="pyttsx3"
+handler=".pyttsx3"
 name="Male (default)"
 params={volume = 1.0, voice_gender = "male"}
 
 [gtts-default]
 name="GTTS (en)"
-handler="gtts"
+handler=".gtts"
 params={lang = "en"}
 """
     try:

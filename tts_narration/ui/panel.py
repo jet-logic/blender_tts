@@ -41,10 +41,7 @@ class SEQUENCER_PT_tts_panel(bpy.types.Panel):
             )
 
         # --- Other Tools (conditional on selected text with tts_id) ---
-        has_text_with_id = any(
-            s.type == "TEXT" and "tts_id" in s for s in selected_sequences
-        )
-        if has_text_with_id:
+        if any(s.type == "TEXT" and "tts_id" in s for s in selected_sequences):
             layout.separator()  # Add visual separation
             col = layout.column(align=True)
             col.operator(
@@ -55,36 +52,19 @@ class SEQUENCER_PT_tts_panel(bpy.types.Panel):
             col.operator(
                 "sequencer.copy_audio_path", icon="COPYDOWN", text="Copy Audio Path"
             )
-        # Add the Export button
-        col.operator_menu_enum(
-            "sequencer.export_narration_list", "export_format"
-        )  # Shows submenu for format
-
-        # # --- Cleanup (always available) ---
-        # layout.separator()
-        # layout.operator(
-        #     "sequencer.cleanup_narration_files",
-        #     icon="TRASH",
-        #     text="Cleanup Unused Files",
-        # )
-
         # --- General Tools ---
         layout.separator()
-        box = layout.box()
-        box.label(text="General Tools:")
-        col = box.column(align=True)
-        # --- Add the Export button ---
-        col.operator(
-            "sequencer.export_narration_list",
-            text="Export Narration List",
-            icon="EXPORT",
-        )
-        # -----------------------------
-        col.operator(
-            "sequencer.cleanup_narration_files",
-            icon="TRASH",
-            text="Cleanup Unused Files",
-        )
+        if col := layout.column(align=True):
+            col.operator(
+                "sequencer.export_narration_list",
+                text="Export Narrations",
+                icon="EXPORT",
+            )
+            col.operator(
+                "sequencer.cleanup_narration_files",
+                icon="TRASH",
+                text="Cleanup Unused Files",
+            )
 
 
 # Register function not needed here if handled in main __init__.py

@@ -91,7 +91,10 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         # --- Dynamic Handler Import and Execution ---
         handler_instance = None
         try:
-            handler_module_name = f"tts_narration.handlers.{handler_name}"
+            if handler_name.startswith("."):
+                handler_module_name = f"tts_narration.handlers{handler_name}"
+            else:
+                handler_module_name = handler_name
             # Reload logic might need adjustment based on dev needs
             # if handler_module_name in sys.modules:
             #     importlib.reload(sys.modules[handler_module_name])

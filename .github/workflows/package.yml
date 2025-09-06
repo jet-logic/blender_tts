@@ -10,10 +10,6 @@ on:
     branches: ["main", "devel"]
 
 jobs:
-  setup:
-    uses: ./.github/workflows/setup-blender.yml
-    # If in different repo: uses: owner/repo/.github/workflows/setup-blender.yml@main
-
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -36,6 +32,9 @@ jobs:
       - name: Zip
         run: |
           bash makezip.sh
+
+      - name: Setup Blender
+        uses: ./.github/actions/setup-blender
 
       - name: Blender
         run: |

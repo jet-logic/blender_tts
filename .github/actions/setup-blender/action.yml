@@ -1,0 +1,32 @@
+name: "Setup Blender"
+description: "Download, extract and setup Blender"
+
+inputs:
+  url:
+    description: "Blender version"
+    required: false
+    default: "https://download.blender.org/release/Blender4.5/blender-4.5.1-linux-x64.tar.xz"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Blender
+      id: cache-blender
+      uses: actions/cache@v3
+      with:
+        path: blender
+        key: ${{ inputs.url }}-1
+
+    - name: Download and extract Blender
+      if: steps.cache-blender.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p blender
+        curl -L ${{ inputs.url }} -o blender.tar.xz
+        tar -xf blender.tar.xz -C blender --strip-components=1
+        rm blender.tar.xz
+
+    - name: Add Blender to PATH
+      shell: bash
+      run: |
+        echo "${{ github.workspace }}/blender" >> $GITHUB_PATH

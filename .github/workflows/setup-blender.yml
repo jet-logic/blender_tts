@@ -1,0 +1,44 @@
+name: Setup Blender Reusable
+
+on:
+  workflow_call:
+    outputs:
+      blender-path:
+        value: ${{ jobs.setup-blender.outputs.blender-path }}
+    secrets:
+      optional: true
+env:
+  BLENDER_URL: "https://download.blender.org/release/Blender4.5/blender-4.5.1-linux-x64.tar.xz"
+
+jobs:
+  setup-blender:
+    runs-on: ubuntu-latest
+    outputs:
+      blender-path: ${{ steps.set-path.outputs.blender-path }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Blender
+        id: cache-blender
+        uses: actions/cache@v3
+        with:
+          path: blender
+          key: ${{ env.BLENDER_URL }}-1
+
+      - name: Download and extract Blender
+        if: steps.cache-blender.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p blender
+          curl -L "$BLENDER_URL" -o blender.tar.xz
+          tar -xf blender.tar.xz -C blender --strip-components=1
+          rm blender.tar.xz
+
+      - name: Set Blender path output
+        id: set-path
+        run: |
+          echo "blender-path=${{ github.workspace }}/blender" >> $GITHUB_OUTPUT
+
+      - name: Add Blender to PATH
+        run: |
+          echo "${{ github.workspace }}/blender" >> $GITHUB_PATH

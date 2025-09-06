@@ -7,7 +7,7 @@ Supports multiple TTS engines via configurable voice profiles.
 bl_info = {
     "name": "VSE Text-to-Speech Narration",
     "author": "Jet-Logic",
-    "version": (0, 2, 2),
+    "version": (0, 2, 3),
     "blender": (3, 0, 0),
     "location": "Sequencer > Add > Text-to-Speech",
     "description": "Generate narration from text strips with ID, refresh, and cleanup. Supports multiple TTS engines.",
@@ -24,6 +24,7 @@ from .operators.generate import VSE_OT_generate_narration
 from .operators.refresh import VSE_OT_refresh_narration
 from .operators.cleanup import VSE_OT_cleanup_narration_files
 from .operators.copy_path import VSE_OT_copy_audio_path
+from .operators.export_list import VSE_OT_export_narration_list
 from .ui.panel import SEQUENCER_PT_tts_panel
 from .ui.preferences import TTSNarrationPreferences
 
@@ -33,6 +34,7 @@ classes = [
     VSE_OT_refresh_narration,
     VSE_OT_cleanup_narration_files,
     VSE_OT_copy_audio_path,
+    VSE_OT_export_narration_list,
     SEQUENCER_PT_tts_panel,
     TTSNarrationPreferences,
 ]

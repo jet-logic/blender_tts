@@ -55,10 +55,32 @@ class SEQUENCER_PT_tts_panel(bpy.types.Panel):
             col.operator(
                 "sequencer.copy_audio_path", icon="COPYDOWN", text="Copy Audio Path"
             )
+        # Add the Export button
+        col.operator_menu_enum(
+            "sequencer.export_narration_list", "export_format"
+        )  # Shows submenu for format
 
-        # --- Cleanup (always available) ---
+        # # --- Cleanup (always available) ---
+        # layout.separator()
+        # layout.operator(
+        #     "sequencer.cleanup_narration_files",
+        #     icon="TRASH",
+        #     text="Cleanup Unused Files",
+        # )
+
+        # --- General Tools ---
         layout.separator()
-        layout.operator(
+        box = layout.box()
+        box.label(text="General Tools:")
+        col = box.column(align=True)
+        # --- Add the Export button ---
+        col.operator(
+            "sequencer.export_narration_list",
+            text="Export Narration List",
+            icon="EXPORT",
+        )
+        # -----------------------------
+        col.operator(
             "sequencer.cleanup_narration_files",
             icon="TRASH",
             text="Cleanup Unused Files",

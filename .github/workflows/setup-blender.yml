@@ -42,3 +42,8 @@ jobs:
       - name: Add Blender to PATH
         run: |
           echo "${{ github.workspace }}/blender" >> $GITHUB_PATH
+
+      - name: Check Blender
+        run: |
+          echo "Blender path: ${{ needs.setup.outputs.blender-path }}"
+          blender --version

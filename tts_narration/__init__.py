@@ -7,7 +7,7 @@ Supports multiple TTS engines via configurable voice profiles.
 bl_info = {
     "name": "VSE Text-to-Speech Narration",
     "author": "Jet-Logic",
-    "version": (0, 2, 1),
+    "version": (0, 2, 2),
     "blender": (3, 0, 0),
     "location": "Sequencer > Add > Text-to-Speech",
     "description": "Generate narration from text strips with ID, refresh, and cleanup. Supports multiple TTS engines.",
@@ -47,23 +47,15 @@ def register():
         except Exception as e:
             print(f"Failed to register {cls}: {e}")
 
-    bpy.types.SEQUENCER_MT_add.append(menu_func)
-
 
 def unregister():
-    # print("Unregistering TTS Narration Add-on...")
-    bpy.types.SEQUENCER_MT_add.remove(menu_func)
-    # Unregister in reverse order
+    # --- UNREGISTER IN REVERSE ORDER ---
     for cls in reversed(classes):
         try:
             bpy.utils.unregister_class(cls)
             # print(f"Unregistered: {cls}")
         except Exception as e:
             print(f"Failed to unregister {cls}: {e}")
-
-
-def menu_func(self, context):
-    self.layout.operator_menu_enum("sequencer.generate_narration", "voice_profile")
 
 
 # Module reload support (optional, useful for development)

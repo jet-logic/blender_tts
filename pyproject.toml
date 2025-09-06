@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "blender-tts-narration"
-version = "0.2.1"
+version = "0.2.2"
 description = "Blender VSE add-on: Generate narration from text strips"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }

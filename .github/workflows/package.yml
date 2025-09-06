@@ -37,9 +37,10 @@ jobs:
           subprocess.run([sys.executable, '-m', 'pip', 'install', 'pyttsx3', 'gTTS'])
           subprocess.run([sys.executable, '-m', 'pip', 'install', 'tomli'])
           "
+
       - name: Install Blender Addon
         env:
-          ZIP_FILE: "/tmp/tts_narration.zip"
+          ZIP_FILE: ${{ runner.temp }}/tts_narration.zip
         run: |
           # zip
           zip -9 -r "$ZIP_FILE" tts_narration -i '*.py'

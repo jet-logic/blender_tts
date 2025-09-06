@@ -4,13 +4,15 @@ import os
 import importlib
 import sys
 from ..core import config as tts_config
-from ..core import file_manager  # Or import functions directly
+from ..core import file_manager
 
 
 class VSE_OT_generate_narration(bpy.types.Operator):
     bl_idname = "sequencer.generate_narration"
     bl_label = "Generate Narration from Text"
     bl_options = {"REGISTER", "UNDO"}
+    # Optional: Add a more descriptive bl_description
+    # bl_description = "Generate narration using a configured voice profile"
 
     # --- Properties ---
     def get_voice_profiles(self, context):
@@ -35,15 +37,42 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         items=get_voice_profiles,
     )
 
-    def execute(self, context):
-        # --- Load Configuration ---
+    @classmethod
+    def poll(cls, context):
+        # Only allow operator if VSE is active and text strips are selected
+        return context.scene.sequence_editor is not None and any(
+            s.type == "TEXT" for s in context.selected_sequences
+        )
+
+    def invoke(self, context, event):
+        # Check if voice_profile is pre-set (e.g., from panel button)
+        # and if it's a valid profile from the current config.
         voices_config = tts_config.load_voices_config()
-        if self.voice_profile not in voices_config:
-            self.report(
-                {"ERROR"}, f"Voice profile '{self.voice_profile}' not found in config."
-            )
+        if (
+            self.voice_profile
+            and self.voice_profile != "NONE"  # Check for our 'None' value
+            and self.voice_profile in voices_config
+        ):
+            # If set and valid, execute directly without showing dialog
+            return self.execute(context)
+        else:
+            # If not set, invalid, or called generically (e.g. from search),
+            # show the dialog for user selection.
+            return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        # --- Validate voice_profile ---
+        voices_config = tts_config.load_voices_config()
+        # Double-check validity, even if invoked directly
+        if (
+            not self.voice_profile
+            or self.voice_profile == "NONE"
+            or self.voice_profile not in voices_config
+        ):
+            self.report({"ERROR"}, f"Invalid or no voice profile selected.")
             return {"CANCELLED"}
 
+        # --- Rest of execute logic (remains largely the same) ---
         selected_voice_config = voices_config[self.voice_profile].copy()
         handler_name = selected_voice_config.pop("handler", None)
         if not handler_name:
@@ -54,9 +83,8 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             return {"CANCELLED"}
 
         # --- Preferences and Output ---
-        prefs = context.preferences.addons[
-            __name__.split(".")[0]
-        ].preferences  # Adjusted for subpackage
+        # Correctly get the addon name for preferences
+        prefs = context.preferences.addons["tts_narration"].preferences
         output_dir = prefs.output_directory or tts_config.get_default_output_dir()
         os.makedirs(output_dir, exist_ok=True)
 
@@ -64,12 +92,23 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         handler_instance = None
         try:
             handler_module_name = f"tts_narration.handlers.{handler_name}"
-            if handler_module_name in sys.modules:
-                importlib.reload(sys.modules[handler_module_name])
+            # Reload logic might need adjustment based on dev needs
+            # if handler_module_name in sys.modules:
+            #     importlib.reload(sys.modules[handler_module_name])
             handler_module = importlib.import_module(handler_module_name)
             HandlerClass = getattr(handler_module, "Handler")
 
-            handler_instance = HandlerClass(**selected_voice_config.get("params", {}))
+            # Pass params from the config
+            handler_params = selected_voice_config.get("params", {})
+            handler_instance = HandlerClass(**handler_params)
+
+            # Check if handler is available (NEW CHECK)
+            if not handler_instance.is_available():
+                self.report(
+                    {"ERROR"},
+                    f"Handler '{handler_name}' is not available. Please check dependencies (e.g., install required library).",
+                )
+                return {"CANCELLED"}
 
         except ImportError as e:
             self.report(
@@ -87,26 +126,27 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             self.report({"ERROR"}, f"Error initializing handler '{handler_name}': {e}")
             return {"CANCELLED"}
 
-        # --- Generate Audio ---
+        # --- Generate Audio for selected strips ---
         created = 0
+        # Ensure output directory exists (redundant check, but safe)
+        os.makedirs(output_dir, exist_ok=True)
+
         for strip in context.selected_sequences:
             if strip.type != "TEXT" or not strip.text.strip():
                 continue
 
-            filepath = file_manager.generate_audio_filename(
-                output_dir, strip
-            )  # Use imported function
+            filepath = file_manager.generate_audio_filename(output_dir, strip)
             try:
                 success = handler_instance.synthesize(strip.text, filepath)
 
                 if success and os.path.exists(filepath):
                     channel = strip.channel + 1
                     frame_start = strip.frame_final_start
-                    sound_name = f"Narr_{file_manager.get_or_create_strip_id(strip)}"  # Use imported function
+                    sound_name = f"Narr_{file_manager.get_or_create_strip_id(strip)}"
 
                     old_strip = file_manager.find_existing_audio_for_text(
                         context.scene, strip
-                    )  # Use imported function
+                    )
                     if old_strip:
                         context.scene.sequence_editor.sequences.remove(old_strip)
 
@@ -117,6 +157,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                         frame_start=frame_start,
                     )
                     created += 1
+                    # Consider less verbose reporting for many strips?
                     self.report(
                         {"INFO"},
                         f"Generated narration for '{strip.name}' using '{self.voice_profile}'",
@@ -132,17 +173,10 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                     {"ERROR"}, f"Error generating audio for '{strip.name}': {e}"
                 )
 
-        self.report(
-            {"INFO"}, f"Generated {created} narration(s) using '{self.voice_profile}'"
-        )
+        if created > 0:
+            self.report(
+                {"INFO"},
+                f"Generated {created} narration(s) using '{self.voice_profile}'",
+            )
+        # else report handled inside loop or by checks
         return {"FINISHED"}
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self)
-
-
-# Register function for this operator if needed separately, or handle in main __init__.py
-# def register():
-#     bpy.utils.register_class(VSE_OT_generate_narration)
-# def unregister():
-#     bpy.utils.unregister_class(VSE_OT_generate_narration)

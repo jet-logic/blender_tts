@@ -1,4 +1,3 @@
-# Make sure to install gTTS: pip install gTTS (in Blender's Python)
 import os
 from .base import BaseTTSHandler
 
@@ -8,7 +7,6 @@ class Handler(BaseTTSHandler):
         self.lang = lang
         self.tld = tld
         self.slow = slow
-        # Store other potential kwargs if needed
 
     def synthesize(self, text: str, output_path: str) -> bool:
         try:

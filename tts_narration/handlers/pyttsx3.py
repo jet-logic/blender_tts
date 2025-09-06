@@ -1,6 +1,4 @@
-# tts_narration/handlers/pyttsx3.py
 import os
-
 from .base import BaseTTSHandler
 
 

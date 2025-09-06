@@ -4,12 +4,11 @@ on:
   push:
     tags:
       - "v*.*.*"
-
+  permissions:
+    contents: write # Required for creating/editing releases and assets
+    releases: write # Specifically for managing releases
 jobs:
   build-and-publish:
-    permissions:
-      contents: write # Required for creating/editing releases and assets
-      releases: write # Specifically for managing releases
     name: Build and Publish
     runs-on: ubuntu-latest
 

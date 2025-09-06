@@ -6,8 +6,6 @@ on:
     outputs:
       blender-path:
         value: ${{ jobs.setup-blender.outputs.blender-path }}
-    secrets:
-      optional: true
 
 env:
   BLENDER_URL: "https://download.blender.org/release/Blender4.5/blender-4.5.1-linux-x64.tar.xz"

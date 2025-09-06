@@ -1,4 +1,3 @@
-# tts_narration/operators/refresh.py
 import bpy
 
 

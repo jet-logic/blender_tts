@@ -1,4 +1,3 @@
-# tts_narration/operators/generate.py
 import bpy
 import os
 import importlib
@@ -9,7 +8,7 @@ from ..core import file_manager
 
 class VSE_OT_generate_narration(bpy.types.Operator):
     bl_idname = "sequencer.generate_narration"
-    bl_label = "Generate Narration from Text"
+    bl_label = "Generate Narration (Vocal VSE)"
     bl_options = {"REGISTER", "UNDO"}
     # Optional: Add a more descriptive bl_description
     # bl_description = "Generate narration using a configured voice profile"
@@ -84,7 +83,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
 
         # --- Preferences and Output ---
         # Correctly get the addon name for preferences
-        prefs = context.preferences.addons["tts_narration"].preferences
+        prefs = context.preferences.addons["vocal_vse"].preferences
         output_dir = prefs.output_directory or tts_config.get_default_output_dir()
         os.makedirs(output_dir, exist_ok=True)
 
@@ -92,7 +91,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         handler_instance = None
         try:
             if handler_name.startswith("."):
-                handler_module_name = f"tts_narration.handlers{handler_name}"
+                handler_module_name = f"vocal_vse.handlers{handler_name}"
             else:
                 handler_module_name = handler_name
             # Reload logic might need adjustment based on dev needs

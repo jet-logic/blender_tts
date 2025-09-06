@@ -1,4 +1,3 @@
-# tts_narration/operators/copy_path.py
 import bpy
 import os
 from ..core import config as tts_config

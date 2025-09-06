@@ -4,9 +4,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "blender-tts-narration"
-version = "0.2.3"
-description = "Blender VSE add-on: Generate narration from text strips"
+name = "vocal-vse"
+version = "0.3.0"
+description = "Blender VSE add-on: Vocal VSE - Generate voiceover narration from text strips"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 authors = [{name = "Jet-Logic"}]

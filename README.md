@@ -1,6 +1,6 @@
-# Blender VSE Text-to-Speech Narration Add-on
+# Vocal VSE
 
-Generate voiceover narration from **text strips** directly in the **Video Sequence Editor (VSE)** — no external tools needed.
+Generate voiceover narration from text strips directly in the Video Sequence Editor (VSE) using Vocal VSE
 
 🔊 Offline TTS | 🔄 Auto-sync | 🧹 Cleanup | 💾 Cached audio
 
@@ -8,7 +8,7 @@ Generate voiceover narration from **text strips** directly in the **Video Sequen
 
 - Generate narration via `pyttsx3`
 - Unique ID links text to audio
-- Auto-save to `~/.cache/blender_narrations`
+- Auto-save to `~/.cache/vocal_vse`
 - Refresh narration after editing text
 - Cleanup unused audio files
 - Copy audio path to clipboard

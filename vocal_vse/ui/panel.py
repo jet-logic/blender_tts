@@ -1,11 +1,9 @@
-# tts_narration/ui/panel.py
-
 import bpy
 from ..core import config as tts_config  # Import for loading config
 
 
 class SEQUENCER_PT_tts_panel(bpy.types.Panel):
-    bl_label = "TTS Narration Tools"
+    bl_label = "Vocal VSE Tools"
     bl_space_type = "SEQUENCE_EDITOR"
     bl_region_type = "UI"
     bl_category = "Tools"

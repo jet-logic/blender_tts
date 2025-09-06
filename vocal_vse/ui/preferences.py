@@ -1,16 +1,13 @@
-# tts_narration/ui/preferences.py
 import bpy
 from ..core import (
     config as tts_config,
 )  # For get_config_directory, get_default_output_dir
 
 
-class TTSNarrationPreferences(bpy.types.AddonPreferences):
-    bl_idname = "tts_narration"  # This needs careful handling, see below.
-
+class VocalVSEPreferences(bpy.types.AddonPreferences):
+    bl_idname = "vocal_vse"
     # bl_idname for AddonPreferences should match the name of the add-on's main package/folder.
-    # If your add-on folder is named 'tts_narration', this should likely be 'tts_narration'.
-    # bl_idname = "tts_narration" # Preferred if add-on folder is 'tts_narration'
+    # If your add-on folder is named 'vocal_vse', this should likely be 'vocal_vse'.
 
     output_directory: bpy.props.StringProperty(
         name="Output Directory",

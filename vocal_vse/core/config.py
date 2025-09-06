@@ -1,4 +1,3 @@
-# tts_narration/core/config.py
 import os
 import platform
 
@@ -57,7 +56,7 @@ def load_voices_config():
 
 def create_default_voices_config(config_path):
     """Create a default/example voices.toml file."""
-    default_config = """# Example Voice Configuration for Blender TTS Add-on
+    default_config = """# Example Vocal VSE Configuration
 [pyttsx3-female]
 name="Female (default)"
 handler = ".pyttsx3"
@@ -88,6 +87,6 @@ def get_default_output_dir():
         cache_dir = os.path.join(home, "AppData", "Local", "cache")
     else:
         cache_dir = os.path.join(home, ".cache")
-    narrations_dir = os.path.join(cache_dir, "blender_narrations")
+    narrations_dir = os.path.join(cache_dir, "vocal_vse")
     os.makedirs(narrations_dir, exist_ok=True)
     return narrations_dir

@@ -35,11 +35,11 @@ jobs:
           bash makezip.sh
 
       - name: Verify zip file
-        run: ls -la dist/ && [ -f dist/tts_narration.zip ]
+        run: ls -la dist/ && [ -f dist/vocal_vse.zip ]
 
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           files: |
-            dist/tts_narration.zip
+            dist/vocal_vse.zip

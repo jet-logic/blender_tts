@@ -1,17 +1,11 @@
-"""
-Blender VSE Text-to-Speech Narration Add-on
-Generates audio from text strips with unique IDs, refresh, and cleanup.
-Supports multiple TTS engines via configurable voice profiles.
-"""
-
 bl_info = {
-    "name": "VSE Text-to-Speech Narration",
+    "name": "Vocal VSE",
     "author": "Jet-Logic",
-    "version": (0, 2, 3),
+    "version": (0, 3, 0),
     "blender": (3, 0, 0),
     "location": "Sequencer > Add > Text-to-Speech",
     "description": "Generate narration from text strips with ID, refresh, and cleanup. Supports multiple TTS engines.",
-    "warning": "Requires TTS engine libraries (e.g., pyttsx3, gTTS) and 'toml' installed in Blender's Python environment.",
+    "warning": "Requires TTS engine libraries (e.g., pyttsx3, gTTS) and 'tomli' installed in Blender's Python environment.",
     "wiki_url": "",
     "tracker_url": "",
     "category": "Sequencer",
@@ -26,7 +20,7 @@ from .operators.cleanup import VSE_OT_cleanup_narration_files
 from .operators.copy_path import VSE_OT_copy_audio_path
 from .operators.export_list import VSE_OT_export_narration_list
 from .ui.panel import SEQUENCER_PT_tts_panel
-from .ui.preferences import TTSNarrationPreferences
+from .ui.preferences import VocalVSEPreferences
 
 # Collect all classes from the modules for registration
 classes = [
@@ -36,12 +30,12 @@ classes = [
     VSE_OT_copy_audio_path,
     VSE_OT_export_narration_list,
     SEQUENCER_PT_tts_panel,
-    TTSNarrationPreferences,
+    VocalVSEPreferences,
 ]
 
 
 def register():
-    # print("Registering TTS Narration Add-on...")
+    # print("Registering Vocal VSE Add-on...")
     for cls in classes:
         try:
             bpy.utils.register_class(cls)

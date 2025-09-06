@@ -1,4 +1,3 @@
-# tts_narration/operators/export_list.py
 import bpy
 import os
 import json
@@ -28,7 +27,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
         return context.scene.sequence_editor is not None
 
     def invoke(self, context, event):
-        prefs = context.preferences.addons["tts_narration"].preferences
+        prefs = context.preferences.addons["vocal_vse"].preferences
         default_output_dir = (
             prefs.output_directory or tts_config.get_default_output_dir()
         )
@@ -52,7 +51,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
             self.filepath += ".json"
 
         # Determine audio output directory
-        prefs = context.preferences.addons["tts_narration"].preferences
+        prefs = context.preferences.addons["vocal_vse"].preferences
         audio_output_dir = prefs.output_directory or tts_config.get_default_output_dir()
 
         # Ensure the target directory for the export file exists

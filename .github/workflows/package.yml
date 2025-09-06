@@ -40,10 +40,10 @@ jobs:
 
       - name: Install Blender Addon
         env:
-          ZIP_FILE: ${{ runner.temp }}/tts_narration.zip
+          ZIP_FILE: ${{ runner.temp }}/vocal_vse.zip
         run: |
           # zip
-          zip -9 -r "$ZIP_FILE" tts_narration -i '*.py'
+          zip -9 -r "$ZIP_FILE" vocal_vse -i '*.py'
           # install
           blender --background --python-expr "
           import bpy
@@ -51,7 +51,7 @@ jobs:
           print('### addon_install', repr(environ['ZIP_FILE']), flush=True)
           bpy.ops.preferences.addon_install(filepath=environ['ZIP_FILE'])
           print('### addon_enable')
-          bpy.ops.preferences.addon_enable(module='tts_narration')
+          bpy.ops.preferences.addon_enable(module='vocal_vse')
           print('### save_userpref')
           bpy.ops.wm.save_userpref()
           "
@@ -60,7 +60,7 @@ jobs:
         run: |
           blender --background --python-expr "
           import bpy
-          from tts_narration.handlers.gtts import Handler
-          from tts_narration.core.config import load_voices_config
+          from vocal_vse.handlers.gtts import Handler
+          from vocal_vse.core.config import load_voices_config
           print('load_voices_config', load_voices_config())
           "

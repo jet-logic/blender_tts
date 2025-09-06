@@ -4,13 +4,14 @@ on:
   push:
     tags:
       - "v*.*.*"
-  permissions:
-    contents: write # Required for creating/editing releases and assets
-    releases: write # Specifically for managing releases
+
 jobs:
   build-and-publish:
     name: Build and Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for creating/editing releases and assets
+      # releases: write # Specifically for managing releases
 
     steps:
       - uses: actions/checkout@v3
@@ -20,13 +21,25 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Add your project's dependency installation command here
+          # pip install -r requirements.txt
+
+      - name: Create dist directory
+        run: mkdir -p dist
+
       - name: Zip
         run: |
           bash makezip.sh
 
+      - name: Verify zip file
+        run: ls -la dist/ && [ -f dist/tts_narration.zip ]
+
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') # Ensures it only runs on tag pushes
         with:
+          tag_name: ${{ github.ref_name }}
           files: |
             dist/tts_narration.zip

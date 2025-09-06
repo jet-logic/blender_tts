@@ -1,4 +1,3 @@
-# tts_narration/__init__.py
 """
 Blender VSE Text-to-Speech Narration Add-on
 Generates audio from text strips with unique IDs, refresh, and cleanup.
@@ -21,9 +20,6 @@ bl_info = {
 import bpy
 
 # Import submodules
-from .operators import generate, refresh, cleanup, copy_path
-from .ui import panel, preferences  # Be careful with preferences.bl_idname
-
 from .operators.generate import VSE_OT_generate_narration
 from .operators.refresh import VSE_OT_refresh_narration
 from .operators.cleanup import VSE_OT_cleanup_narration_files
@@ -31,35 +27,15 @@ from .operators.copy_path import VSE_OT_copy_audio_path
 from .ui.panel import SEQUENCER_PT_tts_panel
 from .ui.preferences import TTSNarrationPreferences
 
-# List of modules containing classes to register
-modules = [
-    generate,
-    refresh,
-    cleanup,
-    copy_path,
-    panel,
-    preferences,  # Ensure bl_idname in preferences.py is correct
-]
-
 # Collect all classes from the modules for registration
-classes = []
-for module in modules:
-    # Assumes each module has classes named like VSE_OT_*, SEQUENCER_PT_*, etc.
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
-        # if isinstance(attr, type):
-        #     print("attr", attr)
-        if isinstance(attr, type) and (
-            issubclass(attr, bpy.types.Operator)
-            or issubclass(attr, bpy.types.Panel)
-            or issubclass(attr, bpy.types.AddonPreferences)
-            or issubclass(attr, bpy.types.PropertyGroup)
-        ):  # Add other types if needed
-            if (
-                attr.__module__ == module.__name__
-            ):  # Only register classes defined in this module
-                classes.append(attr)
-# print(classes)
+classes = [
+    VSE_OT_generate_narration,
+    VSE_OT_refresh_narration,
+    VSE_OT_cleanup_narration_files,
+    VSE_OT_copy_audio_path,
+    SEQUENCER_PT_tts_panel,
+    TTSNarrationPreferences,
+]
 
 
 def register():

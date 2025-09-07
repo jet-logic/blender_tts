@@ -21,7 +21,7 @@ def find_existing_audio_for_text(scene, text_strip):
         return None
     target_id = text_strip["tts_id"]
     for strip in scene.sequence_editor.sequences_all:
-        if strip.type == "SOUND" and f"Voc_{target_id}" in strip.name:
+        if strip.type == "SOUND" and f"oc_{target_id}" in strip.name:
             return strip
     return None
 

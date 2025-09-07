@@ -1,4 +1,3 @@
-import os
 from . import BaseTTSHandler
 
 
@@ -7,17 +6,14 @@ class Handler(BaseTTSHandler):
         self.lang = lang
         self.tld = tld
         self.slow = slow
+        if 0:
+            from gtts import gTTS
+
+            self.gTTS = gTTS
 
     def synthesize(self, text: str, output_path: str) -> bool:
-        try:
-            # Ensure directory exists
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            tts = self.gTTS(text=text, lang=self.lang, slow=self.slow, tld=self.tld)
-            tts.save(output_path)
-            return os.path.exists(output_path)
-        except Exception as e:
-            print(f"Error synthesizing with gTTS: {e}")
-            return False
+        tts = self.gTTS(text=text, lang=self.lang, slow=self.slow, tld=self.tld)
+        tts.save(output_path)
 
     def _get_gTTS(self):
         from gtts import gTTS
@@ -25,11 +21,4 @@ class Handler(BaseTTSHandler):
         return gTTS
 
     def is_available(self):
-        try:
-            from gtts import gTTS
-
-            return True
-        except:
-            pass
-
-        return False
+        return self.gTTS is not None

@@ -1,38 +1,22 @@
-import os
 from . import BaseTTSHandler
 
 
 class Handler(BaseTTSHandler):
-    engine: object
-
     def __init__(self, rate=150, volume=1.0, voice_gender="male", **kwargs):
         self.rate = rate
         self.volume = volume
         self.voice_gender = voice_gender.lower()
-
-    def synthesize(self, text: str, output_path: str) -> bool:
-        if not self.engine:
-            print("pyttsx3 engine not initialized.")
-            return False
-        try:
-            # Ensure directory exists
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            self.engine.save_to_file(text, output_path)
-            self.engine.runAndWait()  # Important: Waits for file to be written
-            return os.path.exists(output_path)
-        except Exception as e:
-            print(f"Error synthesizing with pyttsx3: {e}")
-            return False
-
-    def is_available(self):
-        try:
+        if 0:
             import pyttsx3
 
-            return True
-        except:
-            pass
+            self.engine = pyttsx3.init()
 
-        return False
+    def synthesize(self, text: str, output_path: str) -> bool:
+        self.engine.save_to_file(text, output_path)
+        self.engine.runAndWait()  # Important: Waits for file to be written
+
+    def is_available(self):
+        return self.engine is not None
 
     def _get_engine(self):
         engine = None

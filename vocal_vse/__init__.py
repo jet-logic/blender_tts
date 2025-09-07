@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Vocal VSE",
     "author": "Jet-Logic",
-    "version": (0, 3, 0),
+    "version": (0, 3, 1),
     "blender": (3, 0, 0),
     "location": "Sequencer > Add > Text-to-Speech",
     "description": "Generate narration from text strips with ID, refresh, and cleanup. Supports multiple TTS engines.",

@@ -1,20 +1,19 @@
 import os
 import time
-import uuid
+from secrets import token_bytes
+from base64 import b32encode
 
 
-# Move file-related functions here
 def get_or_create_strip_id(strip):
     if "tts_id" not in strip:
-        new_id = str(uuid.uuid4()).replace("-", "")[:16]
+        new_id = b32encode(token_bytes(5)).decode("ascii").rstrip("=").lower()
         strip["tts_id"] = new_id
     return strip["tts_id"]
 
 
 def generate_audio_filename(output_dir, strip):
     strip_id = get_or_create_strip_id(strip)
-    timestamp = int(time.time() % 100000)
-    return os.path.join(output_dir, f"voc_{strip_id}_{timestamp}.wav")
+    return os.path.join(output_dir, f"voc_{strip_id}_{int(time.time() % 65536):x}.wav")
 
 
 def find_existing_audio_for_text(scene, text_strip):

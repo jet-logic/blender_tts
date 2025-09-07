@@ -7,6 +7,7 @@ from ..core import file_manager  # Or import functions
 class VSE_OT_copy_audio_path(bpy.types.Operator):
     bl_idname = "sequencer.copy_audio_path"
     bl_label = "Copy Audio File Path"
+    bl_description = "Copy the file path of the latest generated audio for the selected text strip to the clipboard"
 
     def execute(self, context):
         for strip in context.selected_sequences:

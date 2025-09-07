@@ -1,7 +1,6 @@
 import bpy
 import os
 import importlib
-import sys
 from ..core import config as tts_config
 from ..core import file_manager
 
@@ -10,8 +9,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
     bl_idname = "sequencer.generate_narration"
     bl_label = "Generate Narration (Vocal VSE)"
     bl_options = {"REGISTER", "UNDO"}
-    # Optional: Add a more descriptive bl_description
-    # bl_description = "Generate narration using a configured voice profile"
+    bl_description = "Generate narration audio from selected text strips using a configured voice profile"
 
     # --- Properties ---
     def get_voice_profiles(self, context):

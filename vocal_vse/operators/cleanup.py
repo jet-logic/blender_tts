@@ -9,8 +9,7 @@ class VSE_OT_cleanup_narration_files(bpy.types.Operator):
     bl_label = "Cleanup Unused Narration Files"
     bl_options = {"REGISTER"}
     bl_description = (
-        "Delete narration audio files not linked to text strips "
-        "and not used by any sound strip in the VSE"
+        "Delete narration audio files not currently used by any sound strip in the VSE"
     )
 
     def execute(self, context):

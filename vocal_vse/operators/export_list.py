@@ -1,3 +1,4 @@
+import datetime
 import bpy
 import os
 import json
@@ -6,8 +7,6 @@ from ..core import file_manager
 
 
 class VSE_OT_export_narration_list(bpy.types.Operator):
-    """Export a list of TTS narrations (Text Strip ID -> Audio File) as JSON"""
-
     bl_idname = "sequencer.export_narration_list"
     bl_label = "Export Narration List (JSON)"
     bl_options = {"REGISTER", "UNDO"}
@@ -103,7 +102,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
             export_data = {
                 "export_info": {
                     "blend_file": bpy.data.filepath or "Unsaved",
-                    "export_timestamp": bpy.context.scene.frame_current,  # Simple timestamp
+                    "export_timestamp": datetime.datetime.now().isoformat(),  # Simple timestamp
                     "audio_output_directory": audio_output_dir,
                 },
                 "narrations": narration_data,

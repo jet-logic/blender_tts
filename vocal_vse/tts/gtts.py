@@ -1,5 +1,5 @@
 import os
-from .base import BaseTTSHandler
+from . import BaseTTSHandler
 
 
 class Handler(BaseTTSHandler):

@@ -25,7 +25,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                 (
                     "NONE",
                     "No Profiles Found",
-                    "Please configure voices in ~/.config/blender_tts/voices.toml",
+                    "Please configure voices in ~/.config/vocal_vse/voices.toml",
                 )
             ]
         return items
@@ -91,7 +91,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         handler_instance = None
         try:
             if handler_name.startswith("."):
-                handler_module_name = f"vocal_vse.handlers{handler_name}"
+                handler_module_name = f"vocal_vse.tts{handler_name}"
             else:
                 handler_module_name = handler_name
             # Reload logic might need adjustment based on dev needs
@@ -144,7 +144,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                 if success and os.path.exists(filepath):
                     channel = strip.channel + 1
                     frame_start = strip.frame_final_start
-                    sound_name = f"Narr_{file_manager.get_or_create_strip_id(strip)}"
+                    sound_name = f"Voc_{file_manager.get_or_create_strip_id(strip)}"
 
                     old_strip = file_manager.find_existing_audio_for_text(
                         context.scene, strip

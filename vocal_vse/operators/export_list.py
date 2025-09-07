@@ -77,9 +77,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
                     audio_output_dir
                 )
                 matching_files = [
-                    f
-                    for f in all_narration_files
-                    if f.startswith(f"narration_{tts_id}_")
+                    f for f in all_narration_files if f.startswith(f"voc_{tts_id}_")
                 ]
                 matching_files.sort()  # Sort for consistency
 

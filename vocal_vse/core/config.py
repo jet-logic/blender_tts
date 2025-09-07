@@ -9,7 +9,7 @@ def get_config_directory():
         config_dir = os.path.join(home, "AppData", "Roaming")
     else:  # Linux/macOS
         config_dir = os.path.join(home, ".config")
-    addon_config_dir = os.path.join(config_dir, "blender_tts")
+    addon_config_dir = os.path.join(config_dir, "vocal_vse")
     os.makedirs(addon_config_dir, exist_ok=True)
     return addon_config_dir
 

@@ -14,7 +14,7 @@ def get_or_create_strip_id(strip):
 def generate_audio_filename(output_dir, strip):
     strip_id = get_or_create_strip_id(strip)
     timestamp = int(time.time() % 100000)
-    return os.path.join(output_dir, f"narration_{strip_id}_{timestamp}.wav")
+    return os.path.join(output_dir, f"voc_{strip_id}_{timestamp}.wav")
 
 
 def find_existing_audio_for_text(scene, text_strip):
@@ -22,7 +22,7 @@ def find_existing_audio_for_text(scene, text_strip):
         return None
     target_id = text_strip["tts_id"]
     for strip in scene.sequence_editor.sequences_all:
-        if strip.type == "SOUND" and f"Narr_{target_id}" in strip.name:
+        if strip.type == "SOUND" and f"Voc_{target_id}" in strip.name:
             return strip
     return None
 
@@ -31,7 +31,5 @@ def get_all_narration_files(output_dir):
     if not os.path.exists(output_dir):
         return []
     return [
-        f
-        for f in os.listdir(output_dir)
-        if f.startswith("narration_") and f.endswith(".wav")
+        f for f in os.listdir(output_dir) if f.startswith("voc_") and f.endswith(".wav")
     ]

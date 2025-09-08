@@ -5,16 +5,13 @@ class BaseTTSHandler(abc.ABC):
     """Abstract base class for TTS handlers."""
 
     @abc.abstractmethod
-    def synthesize(self, text: str, output_path: str) -> None:
+    def synthesize(self, text: str, output_path: str, **kwargs) -> None:
         """
         Synthesize text to speech and save to output_path.
 
         Args:
             text: The text to synthesize.
             output_path: The full path to save the audio file (e.g., .wav).
-
-        Returns:
-            True if successful, False otherwise.
         """
         pass
 

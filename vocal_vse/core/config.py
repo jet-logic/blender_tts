@@ -57,15 +57,10 @@ def load_voices_config():
 def create_default_voices_config(config_path):
     """Create a default/example voices.toml file."""
     default_config = """# Example Vocal VSE Configuration
-[pyttsx3-female]
-name="Female (default)"
+[pyttsx3]
+name="pyttsx3 (default)"
 handler = ".pyttsx3"
 params={volume = 1.0, voice_gender = "female"}
-
-[pyttsx3-male]
-handler=".pyttsx3"
-name="Male (default)"
-params={volume = 1.0, voice_gender = "male"}
 
 [gtts-default]
 name="GTTS (en)"

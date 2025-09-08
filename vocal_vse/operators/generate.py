@@ -1,5 +1,3 @@
-# vocal_vse/operators/generate.py
-
 import os
 import importlib
 import threading
@@ -16,14 +14,11 @@ ongoing_operations = {}
 
 
 def background_synthesis(
-    op_id, context, handler_instance, selected_sequences, output_dir, voice_profile_name
+    op_id, handler_instance, selected_sequences, output_dir, voice_profile_name
 ):
     """The actual synthesis work, run in a background thread."""
     results = []
     errors = []
-    total = len(selected_sequences)
-    prefs = context.preferences.addons["vocal_vse"].preferences
-    output_dir = prefs.output_directory or tts_config.get_default_output_dir()
     os.makedirs(output_dir, exist_ok=True)  # Ensure exists before thread work
 
     try:
@@ -203,7 +198,6 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             target=background_synthesis,
             args=(
                 self._op_id,
-                context,  # Be careful passing context, use it mainly for initial data retrieval
                 handler_instance,
                 selected_sequences,
                 context.preferences.addons["vocal_vse"].preferences.output_directory

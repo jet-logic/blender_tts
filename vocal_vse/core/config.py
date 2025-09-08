@@ -59,12 +59,12 @@ def create_default_voices_config(config_path):
     default_config = """# Example Vocal VSE Configuration
 [pyttsx3]
 name="pyttsx3 (default)"
-handler = ".pyttsx3"
+synthesizer=".pyttsx3:Synthesizer"
 params={volume = 1.0}
 
 [gtts-default]
 name="GTTS (default)"
-handler=".gtts"
+synthesizer=".gtts:Synthesizer"
 # https://gtts.readthedocs.io/en/latest/module.html#module-gtts.tts
 # example : {lang = "en", tld="com", slow=True}
 params={lang = "en"}

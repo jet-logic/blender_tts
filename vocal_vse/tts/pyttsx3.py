@@ -1,7 +1,7 @@
-from . import BaseTTSHandler
+from . import SynthesizerBase
 
 
-class Handler(BaseTTSHandler):
+class Synthesizer(SynthesizerBase):
     def __init__(self, voice_id="", rate=-1, volume=-1.0, **kwargs):
         self.rate = rate
         self.volume = volume

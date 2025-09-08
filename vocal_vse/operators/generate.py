@@ -171,47 +171,53 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             return {"CANCELLED"}
 
         selected_voice_config = voices_config[self.voice_profile].copy()
-        handler_name = selected_voice_config.pop("handler", None)
-        if not handler_name:
+        synthesizer_spec = selected_voice_config.pop("synthesizer", None)
+        if not synthesizer_spec:
             self.report(
                 {"ERROR"},
-                f"Handler not specified for voice profile '{self.voice_profile}'.",
+                f"Synthesizer not specified for voice profile '{self.voice_profile}'.",
             )
             return {"CANCELLED"}
 
-        # --- Initialize Handler ---
+        # --- Initialize Synthesizer ---
         handler_instance = None
         try:
-            if handler_name.startswith("."):
-                handler_module_name = f"vocal_vse.tts{handler_name}"
+            # --- Parse synthesizer spec ---
+            # Format: "module_name:ClassName" or ".relative_module:ClassName"
+            if ":" in synthesizer_spec:
+                module_part, class_part = synthesizer_spec.rsplit(":", 1)
             else:
-                handler_module_name = handler_name
+                # Fallback if format is incorrect or old, assume Handler class
+                # This helps with backward compatibility if needed, though spec requires :
+                self.report(
+                    {"ERROR"},
+                    f"Invalid synthesizer spec '{synthesizer_spec}' for profile '{self.voice_profile}'. Expected format 'module:ClassName'.",
+                )
+                return {"CANCELLED"}
+
+            if module_part.startswith("."):
+                handler_module_name = f"vocal_vse.tts{module_part}"
+            else:
+                handler_module_name = synthesizer_spec
+
+            # --- Import and Instantiate ---
+
             handler_module = importlib.import_module(handler_module_name)
-            HandlerClass = getattr(handler_module, "Handler")
+            SynthesizerClass = getattr(handler_module, class_part)
             handler_params = selected_voice_config.get("params", {})
-            handler_instance = HandlerClass(**handler_params)
+            handler_instance = SynthesizerClass(**handler_params)
 
             if not handler_instance.is_available():
                 self.report(
                     {"ERROR"},
-                    f"Handler '{handler_name}' is not available. Please check dependencies (e.g., install required library).",
+                    f"Synthesizer '{synthesizer_spec}' is not available. Please check dependencies (e.g., install required library).",
                 )
                 return {"CANCELLED"}
 
-        except ImportError as e:
-            self.report(
-                {"ERROR"},
-                f"Handler module '{handler_module_name}' could not be imported. Is the library installed? Error: {e}",
-            )
-            return {"CANCELLED"}
-        except AttributeError:
-            self.report(
-                {"ERROR"},
-                f"Handler class 'Handler' not found in module '{handler_module_name}'.",
-            )
-            return {"CANCELLED"}
         except Exception as e:
-            self.report({"ERROR"}, f"Error initializing handler '{handler_name}': {e}")
+            self.report(
+                {"ERROR"}, f"Error initializing handler '{synthesizer_spec}': {e}"
+            )
             return {"CANCELLED"}
 
         # --- Prepare for Background Execution ---

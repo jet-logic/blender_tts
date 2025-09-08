@@ -1,7 +1,7 @@
 import abc
 
 
-class BaseTTSHandler(abc.ABC):
+class SynthesizerBase(abc.ABC):
     """Abstract base class for TTS handlers."""
 
     @abc.abstractmethod

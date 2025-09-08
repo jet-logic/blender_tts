@@ -60,7 +60,7 @@ jobs:
         run: |
           blender --background --python-expr "
           import bpy
-          from vocal_vse.tts.gtts import Handler
+          from vocal_vse.tts.gtts import Synthesizer
           from vocal_vse.core.config import load_voices_config
           print('load_voices_config', load_voices_config())
           "

@@ -6,9 +6,9 @@ import unittest
 class TestTTS(unittest.TestCase):
 
     def test_pyttsx3_synthesize(self):
-        from vocal_vse.tts.pyttsx3 import Handler
+        from vocal_vse.tts.pyttsx3 import Synthesizer
 
-        h = Handler()
+        h = Synthesizer()
         voices = h.engine.getProperty("voices")
         for voice in voices:
             print(
@@ -19,7 +19,7 @@ class TestTTS(unittest.TestCase):
             prefix="voc1_", delete=False, suffix=".wav"
         ) as f:
             f.close()
-            Handler("bnt/sw").synthesize(
+            Synthesizer("bnt/sw").synthesize(
                 r"""Beautiful is better than ugly.
                 Explicit is better than implicit.
                 Simple is better than complex.
@@ -34,7 +34,9 @@ class TestTTS(unittest.TestCase):
             prefix="voc2_", delete=False, suffix=".wav"
         ) as f:
             f.close()
-            Handler().synthesize("The quick brown fox jumped over the lazy dog", f.name)
+            Synthesizer().synthesize(
+                "The quick brown fox jumped over the lazy dog", f.name
+            )
             self.assertTrue(os.path.exists(f.name))
 
 

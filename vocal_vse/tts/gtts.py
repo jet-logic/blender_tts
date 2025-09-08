@@ -1,7 +1,7 @@
-from . import BaseTTSHandler
+from . import SynthesizerBase
 
 
-class Handler(BaseTTSHandler):
+class Synthesizer(SynthesizerBase):
     def __init__(self, lang="en", tld="com", slow=False, timeout=0, **kwargs):
         self.lang = lang
         self.tld = tld

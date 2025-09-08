@@ -1,5 +1,6 @@
 import os
 import importlib
+import queue
 import threading
 import traceback  # For better error reporting in threads
 from tempfile import gettempdir
@@ -7,6 +8,12 @@ from ..core import config as tts_config
 from ..core import file_manager
 import bpy
 
+# Define message types for clarity (optional but helpful)
+MSG_PROGRESS = "progress_update"
+MSG_ERROR = "error"
+MSG_CRITICAL_ERROR = "critical_error"
+MSG_RESULT = "result"  # If sending results via queue
+MSG_FINISHED = "finished"
 # --- Global state to manage ongoing operations (Consider using a class or bpy.types.PropertyGroup for better management) ---
 # For simplicity here, using a module-level dict. In complex add-ons, a PropertyGroup is better.
 # Key: unique operation ID, Value: {'thread': Thread, 'progress': int, 'total': int, 'results': list, 'errors': list}
@@ -14,12 +21,18 @@ ongoing_operations = {}
 
 
 def background_synthesis(
-    op_id, handler_instance, selected_sequences, output_dir, voice_profile_name
+    op_id,
+    handler_instance,
+    selected_sequences,
+    output_dir,
+    voice_profile_name,
+    message_queue,  # Accept the queue
 ):
     """The actual synthesis work, run in a background thread."""
-    results = []
-    errors = []
-    os.makedirs(output_dir, exist_ok=True)  # Ensure exists before thread work
+    # results = [] # If using queue for results, might not need this list locally
+    # errors = []  # If using queue for errors, might not need this list locally
+    total = len(selected_sequences)
+    os.makedirs(output_dir, exist_ok=True)
 
     try:
         for i, strip in enumerate(selected_sequences):
@@ -29,44 +42,55 @@ def background_synthesis(
             filepath = file_manager.generate_audio_filename(output_dir, strip)
             error_msg = ""
             try:
-                # This is the potentially long-running call
                 handler_instance.synthesize(strip.text, filepath)
-                results.append(
+                # --- Send Result via Queue ---
+                message_queue.put(
                     {
-                        "strip_name": strip.name,
-                        "filepath": filepath,
-                        "text_strip": strip,  # Pass the strip object reference
+                        "type": MSG_RESULT,
+                        "data": {
+                            "strip_name": strip.name,
+                            "filepath": filepath,
+                            "text_strip": strip,
+                        },
                     }
                 )
+                # ----------------------------
             except Exception as e:
                 error_msg = f"Error generating audio for '{strip.name}': {e}\n{traceback.format_exc()}"
-                errors.append(error_msg)
+                # --- Send Error via Queue ---
+                message_queue.put({"type": MSG_ERROR, "data": error_msg})
+                # ---------------------------
 
-            # Update global state (needs thread safety consideration)
-            # Simple approach: assume single operation for now, or use locks/queues
-            if op_id in ongoing_operations:
-                ongoing_operations[op_id]["progress"] = i + 1
-                ongoing_operations[op_id]["current_strip"] = strip.name
-                if error_msg:
-                    ongoing_operations[op_id]["errors"].append(
-                        error_msg
-                    )  # Append errors
+            # --- Send Progress Update via Queue ---
+            message_queue.put(
+                {
+                    "type": MSG_PROGRESS,
+                    "data": {
+                        "progress": i + 1,
+                        "current_strip": strip.name,
+                        "has_error": bool(
+                            error_msg
+                        ),  # Optional: indicate error in progress
+                    },
+                }
+            )
+            # -------------------------------------
 
-        # Signal completion
-        if op_id in ongoing_operations:
-            ongoing_operations[op_id]["finished"] = True
-            ongoing_operations[op_id]["results"] = results
-            ongoing_operations[op_id]["errors"].extend(errors)  # Add any final errors
+        # --- Signal Completion via Queue ---
+        # Send any final summary errors if needed, or just the finished signal
+        # For simplicity, just send finished. Errors were sent individually.
+        message_queue.put({"type": MSG_FINISHED})
+        # -----------------------------------
 
     except Exception as e:
         # Handle unexpected errors in the thread
-        critical_error = (
-            f"Critical error in background thread: {e}\n{traceback.format_exc()}"
-        )
-        print(critical_error)  # Print to console
-        if op_id in ongoing_operations:
-            ongoing_operations[op_id]["finished"] = True
-            ongoing_operations[op_id]["critical_error"] = critical_error
+        critical_error_msg = f"Critical error in background thread (ID: {op_id}): {e}\n{traceback.format_exc()}"
+        print(critical_error_msg)  # Still print to console for debugging
+        # --- Send Critical Error via Queue ---
+        message_queue.put({"type": MSG_CRITICAL_ERROR, "data": critical_error_msg})
+        # --- Also Signal Finished (even with error) ---
+        message_queue.put({"type": MSG_FINISHED})
+        # ---------------------------------------------
 
 
 class VSE_OT_generate_narration(bpy.types.Operator):
@@ -184,13 +208,16 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             "progress": 0,
             "total": len(selected_sequences),
             "finished": False,
-            "results": [],
-            "errors": [],
-            "critical_error": None,
+            "results": [],  # Can potentially be removed if using queue for results
+            "errors": [],  # Can potentially be removed if using queue for errors
+            "critical_error": None,  # Can potentially be removed
             "current_strip": "Starting...",
-            "handler_instance": handler_instance,  # Store handler instance
-            "selected_sequences": selected_sequences,  # Store sequences
-            "voice_profile_name": self.voice_profile,  # Store profile name for reporting
+            "handler_instance": handler_instance,
+            "selected_sequences": selected_sequences,
+            "voice_profile_name": self.voice_profile,
+            # --- Add the Queue ---
+            "message_queue": queue.Queue(),
+            # ---------------------
         }
 
         # --- Start Background Thread ---
@@ -203,6 +230,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                 context.preferences.addons["vocal_vse"].preferences.output_directory
                 or tts_config.get_default_output_dir(),
                 self.voice_profile,
+                ongoing_operations[self._op_id]["message_queue"],
             ),
             name=f"VocalVSE_{self._op_id}",
         )
@@ -230,27 +258,64 @@ class VSE_OT_generate_narration(bpy.types.Operator):
             return {"CANCELLED"}
 
         op_state = ongoing_operations[self._op_id]
-
+        message_queue = op_state["message_queue"]  # Get the queue
         # Check for timer events
         if event.type == "TIMER":
-            # Update progress in UI (e.g., via a progress bar if you add one, or just report occasionally)
-            # For now, we mostly wait for completion
-            # You could add a progress indicator in the panel or report every N strips
-            # if op_state['progress'] % 5 == 0 or op_state['progress'] == op_state['total']:
-            #     print(f"Progress: {op_state['progress']}/{op_state['total']} - {op_state['current_strip']}")
+            # --- Process messages from the background thread ---
+            finished_flag_received = False
+            while True:
+                try:
+                    # Get message, non-blocking
+                    message = message_queue.get_nowait()
+                    msg_type = message.get("type")
+                    msg_data = message.get("data")
 
-            # Check if the background thread has finished
-            if op_state["finished"]:
+                    if msg_type == MSG_PROGRESS:
+                        # Update local op_state view
+                        op_state["progress"] = msg_data["progress"]
+                        op_state["current_strip"] = msg_data["current_strip"]
+                        # Optionally update UI elements if you have them linked to op_state
+                        # print(f"Progress: {op_state['progress']}/{op_state['total']} - {op_state['current_strip']}")
+
+                    elif msg_type == MSG_ERROR:
+                        # Store error locally in op_state for final reporting
+                        op_state["errors"].append(
+                            msg_data
+                        )  # msg_data is the error string
+
+                    elif msg_type == MSG_CRITICAL_ERROR:
+                        # Store critical error
+                        op_state["critical_error"] = (
+                            msg_data  # msg_data is the error string
+                        )
+
+                    elif msg_type == MSG_RESULT:
+                        # Store result locally in op_state for final processing
+                        op_state["results"].append(
+                            msg_data
+                        )  # msg_data is the result dict
+
+                    elif msg_type == MSG_FINISHED:
+                        # Mark that we received the finished signal
+                        finished_flag_received = True
+                        # Note: Don't break here immediately, process any remaining messages first
+                        # Or handle finished logic after the message loop
+
+                except queue.Empty:
+                    # No more messages in the queue right now
+                    break
+
+            # --- Check if finished signal was received ---
+            if finished_flag_received:
                 # Clean up timer
                 if hasattr(self, "_timer") and self._timer:
                     context.window_manager.event_timer_remove(self._timer)
 
-                # --- Handle Results ---
+                # --- Handle Results (from op_state['results']) ---
                 results = op_state["results"]
                 errors = op_state["errors"]
                 critical_error = op_state.get("critical_error")
                 voice_profile_name = op_state["voice_profile_name"]
-
                 # Add sound strips to the VSE (must be done on the main thread!)
                 created_count = 0
                 for result in results:
@@ -288,7 +353,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                         errors.append(error_msg)
                         print(error_msg)  # Log to console
 
-                # --- Report Final Status ---
+                # --- Report Final Status (same as before, using errors/critical_error from op_state) ...
                 if critical_error:
                     self.report(
                         {"ERROR"}, f"Critical error during generation: {critical_error}"
@@ -311,11 +376,16 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                         {"INFO"},
                         f"Generated {created_count} narration(s) using '{voice_profile_name}'",
                     )
+                # Clean up global state (thread safety for ongoing_operations access still needed here or via lock)
+                # Consider using a lock here if direct dict access remains
+                # with ongoing_operations_lock: # If you added a lock
+                #     if self._op_id in ongoing_operations:
+                #         del ongoing_operations[self._op_id]
+                # Or if confident about single access point:
+                if self._op_id in ongoing_operations:
+                    del ongoing_operations[self._op_id]
 
-                # Clean up global state
-                del ongoing_operations[self._op_id]
-
-                return {"FINISHED"}  # Modal operator finished
+                return {"FINISHED"}
 
         # Check for user cancellation (ESC key)
         elif event.type in {"ESC"}:

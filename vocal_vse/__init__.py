@@ -16,6 +16,9 @@ try:
 except ImportError:
     pass
 else:
+    from logging import getLogger
+
+    logger = getLogger(__name__)
     # Import submodules
     from .operators.generate import VSE_OT_generate_narration
     from .operators.refresh import VSE_OT_refresh_narration
@@ -37,22 +40,23 @@ else:
     ]
 
     def register():
-        # print("Registering Vocal VSE Add-on...")
+        logger.info("Registering Vocal VSE Add-on...")
         for cls in classes:
             try:
                 bpy.utils.register_class(cls)
-                # print(f"Registered: {cls}")
             except Exception as e:
-                print(f"Failed to register {cls}: {e}")
+                logger.error(
+                    f"Failed to register {cls}: {e}", exc_info=True
+                )  # <-- Use logger.error
 
     def unregister():
+        logger.info("Unregistering Vocal VSE Add-on...")
         # --- UNREGISTER IN REVERSE ORDER ---
         for cls in reversed(classes):
             try:
                 bpy.utils.unregister_class(cls)
-                # print(f"Unregistered: {cls}")
             except Exception as e:
-                print(f"Failed to unregister {cls}: {e}")
+                logger.error(f"Failed to unregister {cls}: {e}", exc_info=True)
 
     # Module reload support (optional, useful for development)
     if __name__ == "__main__":

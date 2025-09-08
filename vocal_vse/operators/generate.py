@@ -4,11 +4,13 @@ import queue
 import concurrent.futures
 import threading
 import traceback  # For better error reporting in threads
+from logging import getLogger
 from tempfile import gettempdir
 from ..core import config as tts_config
 from ..core import file_manager
 import bpy
 
+logger = getLogger(__name__)
 # --- Message Types for Queue Communication ---
 MSG_PROGRESS = "progress_update"
 MSG_ERROR = "error"
@@ -37,7 +39,7 @@ def background_synthesis_task(
         for i, strip in enumerate(selected_sequences):
             # --- Check for cancellation ---
             if stop_event.is_set():
-                print(f"Background task was cancelled.")
+                logger.warning(f"Background task was cancelled.")
                 # It's good practice to signal finish even if cancelled
                 # so the main thread knows the worker is done.
                 message_queue.put({"type": MSG_FINISHED})
@@ -97,7 +99,6 @@ def background_synthesis_task(
         critical_error_msg = (
             f"Critical error in background task: {e}\n{traceback.format_exc()}"
         )
-        print(critical_error_msg)  # Still print to console for debugging
         # --- Send Critical Error via Queue ---
         message_queue.put({"type": MSG_CRITICAL_ERROR, "data": critical_error_msg})
         # --- Also Signal Finished (even with error) ---
@@ -388,8 +389,11 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                         # self.report({"INFO"}, f"Added audio for '{strip_name}'")
                     except Exception as e:
                         error_msg = f"Failed to add sound strip for '{strip_name}': {e}"
+                        logger.error(
+                            f"Failed to add sound strip for '{strip_name}': {e}",
+                            exc_info=True,
+                        )
                         final_errors.append(error_msg)
-                        print(error_msg)  # Log to console
 
                 # --- Report Final Status ---
                 # Check if stop event was set before finishing normally for cancellation report
@@ -426,20 +430,12 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                             f"Generation completed with errors ({len(final_errors)}). Also failed to write log: {log_write_error}. First few errors: {error_summary}",
                         )
 
-                    # Truncate error summary in report if too long (already handled by slicing [:3])
-                    if len(final_errors) > 3:
-                        # Error message already indicates "... (and X more errors)"
-                        pass
                 else:
                     self.report(
                         {"INFO"},
                         f"Generated {created_count} narration(s) using '{voice_profile_name}'",
                     )
                 # --------------------------
-
-                # --- Operator state (self.*) is automatically cleaned up
-                # when the operator instance is destroyed ---
-                # No need to manually delete from a global dict.
 
                 return {"FINISHED"}  # Modal operator finished
 

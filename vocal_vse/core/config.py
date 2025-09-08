@@ -1,5 +1,8 @@
 import os
 import platform
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def get_config_directory():
@@ -29,7 +32,7 @@ def load_voices_config():
         try:
             import tomli as tomllib
         except ImportError:
-            print(
+            logger.error(
                 "Error: Either 'tomllib' (Python 3.11+) or 'tomli' library is required. Please install 'tomli' in Blender's Python environment."
             )
             return {}
@@ -37,20 +40,17 @@ def load_voices_config():
     config_path = get_voices_config_path()
     if not os.path.exists(config_path):
         create_default_voices_config(config_path)
-        print(f"Created default voices config at {config_path}")
+        logger.info(f"Created default voices config at {config_path}")
 
     try:
         # tomllib.load requires a binary file handle
-        mode = (
-            "rb"
-            if hasattr(tomllib, "load") and tomllib is not __import__("tomllib")
-            else "r"
-        )
         with open(config_path, "rb") as f:
             config = tomllib.load(f)
         return config
     except Exception as e:
-        print(f"Error loading voices config from {config_path}: {e}")
+        logger.error(
+            f"Error loading voices config from {config_path}: {e}", exc_info=True
+        )
         return {}
 
 
@@ -60,18 +60,20 @@ def create_default_voices_config(config_path):
 [pyttsx3]
 name="pyttsx3 (default)"
 handler = ".pyttsx3"
-params={volume = 1.0, voice_gender = "female"}
+params={volume = 1.0}
 
 [gtts-default]
-name="GTTS (en)"
+name="GTTS (default)"
 handler=".gtts"
+# https://gtts.readthedocs.io/en/latest/module.html#module-gtts.tts
+# example : {lang = "en", tld="com", slow=True}
 params={lang = "en"}
 """
     try:
         with open(config_path, "w") as f:
             f.write(default_config.strip())
     except Exception as e:
-        print(f"Error creating default config file: {e}")
+        logger.error(f"Error creating default config file: {e}", exc_info=True)
 
 
 # Move utility functions here if they don't fit better in file_manager.py

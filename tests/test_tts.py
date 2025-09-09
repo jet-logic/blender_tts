@@ -19,7 +19,7 @@ class TestTTS(unittest.TestCase):
             prefix="voc1_", delete=False, suffix=".wav"
         ) as f:
             f.close()
-            Synthesizer("bnt/sw").synthesize(
+            Synthesizer().synthesize(
                 r"""Beautiful is better than ugly.
                 Explicit is better than implicit.
                 Simple is better than complex.
@@ -31,11 +31,11 @@ class TestTTS(unittest.TestCase):
             )
             self.assertTrue(os.path.exists(f.name))
         with tempfile.NamedTemporaryFile(
-            prefix="voc2_", delete=False, suffix=".wav"
+            prefix="jpx_", delete=False, suffix=".wav"
         ) as f:
             f.close()
-            Synthesizer().synthesize(
-                "The quick brown fox jumped over the lazy dog", f.name
+            Synthesizer("jpx/ja").synthesize(
+                "Furuike ya/ Kawazu tobikomu/ Mizu no oto", f.name
             )
             self.assertTrue(os.path.exists(f.name))
 

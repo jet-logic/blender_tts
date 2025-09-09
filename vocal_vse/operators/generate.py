@@ -256,10 +256,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         self.task_finished = False  # Custom flag for MSG_FINISHED
 
         # Determine output directory once, pass it to the task
-        output_dir = (
-            context.preferences.addons["vocal_vse"].preferences.output_directory
-            or tts_config.get_default_output_dir()
-        )
+        output_dir = tts_config.get_default_output_dir()
 
         # --- Submit Task to Executor ---
         # Note: We pass the stop_event and the pre-determined output_dir to the task function

@@ -12,12 +12,7 @@ class VSE_OT_copy_audio_path(bpy.types.Operator):
     def execute(self, context):
         for strip in context.selected_sequences:
             if strip.type == "TEXT" and "tts_id" in strip:
-                prefs = context.preferences.addons[
-                    __name__.split(".")[0]
-                ].preferences  # Adjusted
-                output_dir = (
-                    prefs.output_directory or tts_config.get_default_output_dir()
-                )
+                output_dir = tts_config.get_default_output_dir()
                 files = [
                     f
                     for f in file_manager.get_all_narration_files(

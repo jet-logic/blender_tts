@@ -76,9 +76,35 @@ params={lang = "en"}
         logger.error(f"Error creating default config file: {e}", exc_info=True)
 
 
-# Move utility functions here if they don't fit better in file_manager.py
-# get_default_output_dir could go here or in a file_manager module
 def get_default_output_dir():
+    """Get the default output directory for audio files.
+    Tries to use a '_vocal_vse' folder next to the .blend file.
+    Falls back to ~/.cache/vocal_vse if the blend file is unsaved.
+    """
+    blend_filepath = None
+    try:
+        import bpy
+
+        blend_filepath = bpy.data.filepath
+    except AttributeError:
+        pass
+    except Exception as e:
+        logger.error("{e}", exc_info=True)
+
+    if blend_filepath:
+        # Blend file is saved, use directory next to it
+        blend_dir = os.path.dirname(blend_filepath)
+        narrations_dir = os.path.join(blend_dir, "_vocal_vse")
+        try:
+            os.makedirs(narrations_dir, exist_ok=True)
+            logger.info(f"Using project-specific output dir: {narrations_dir}")
+            return narrations_dir
+        except OSError as e:
+            logger.warning(
+                f"Failed to create project dir '{narrations_dir}', falling back to cache: {e}"
+            )
+
+    # Blend file is unsaved or creating project dir failed, use cache
     home = os.path.expanduser("~")
     if platform.system() == "Windows":
         cache_dir = os.path.join(home, "AppData", "Local", "cache")
@@ -86,4 +112,5 @@ def get_default_output_dir():
         cache_dir = os.path.join(home, ".cache")
     narrations_dir = os.path.join(cache_dir, "vocal_vse")
     os.makedirs(narrations_dir, exist_ok=True)
+    logger.info(f"Using fallback cache output dir: {narrations_dir}")
     return narrations_dir

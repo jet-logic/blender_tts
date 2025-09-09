@@ -60,6 +60,8 @@ def create_default_voices_config(config_path):
 [pyttsx3]
 name="pyttsx3 (default)"
 synthesizer=".pyttsx3:Synthesizer"
+# https://gtts.readthedocs.io/en/latest/module.html#module-gtts.tts
+# example : {rate = 150, vioce="jp", volume=0.5}
 params={volume = 1.0}
 
 [gtts-default]

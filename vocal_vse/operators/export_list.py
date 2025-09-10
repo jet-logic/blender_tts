@@ -2,8 +2,7 @@ import datetime
 import bpy
 import os
 import json
-from ..core import config as tts_config
-from ..core import file_manager
+from ..core import config as config, file_manager
 
 
 class VSE_OT_export_narration_list(bpy.types.Operator):
@@ -26,7 +25,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
         return context.scene.sequence_editor is not None
 
     def invoke(self, context, event):
-        default_output_dir = tts_config.get_default_output_dir()
+        default_output_dir = config.default_output_dir
 
         blend_name = (
             bpy.path.basename(bpy.data.filepath) if bpy.data.filepath else "untitled"
@@ -48,7 +47,7 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
 
         # Determine audio output directory
         prefs = context.preferences.addons["vocal_vse"].preferences
-        audio_output_dir = tts_config.get_default_output_dir()
+        audio_output_dir = config.default_output_dir
 
         # Ensure the target directory for the export file exists
         export_dir = os.path.dirname(self.filepath)

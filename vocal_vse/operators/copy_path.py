@@ -1,7 +1,6 @@
 import bpy
 import os
-from ..core import config as tts_config
-from ..core import file_manager  # Or import functions
+from ..core import config as config, file_manager
 
 
 class VSE_OT_copy_audio_path(bpy.types.Operator):
@@ -12,7 +11,7 @@ class VSE_OT_copy_audio_path(bpy.types.Operator):
     def execute(self, context):
         for strip in context.selected_sequences:
             if strip.type == "TEXT" and "tts_id" in strip:
-                output_dir = tts_config.get_default_output_dir()
+                output_dir = config.default_output_dir
                 files = [
                     f
                     for f in file_manager.get_all_narration_files(

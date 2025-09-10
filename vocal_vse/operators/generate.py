@@ -6,8 +6,7 @@ import threading
 import traceback  # For better error reporting in threads
 from logging import getLogger
 from tempfile import gettempdir
-from ..core import config as tts_config
-from ..core import file_manager
+from ..core import config as config, file_manager
 import bpy
 
 logger = getLogger(__name__)
@@ -118,7 +117,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
 
     # --- Properties ---
     def get_voice_profiles(self, context):
-        voices_config = tts_config.load_voices_config()
+        voices_config = config.voices
         items = [
             (k, v.get("name", k), f"Voice profile: {k}")
             for (k, v) in voices_config.items()
@@ -161,7 +160,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
 
     def invoke(self, context, event):
         # --- Validate voice_profile ---
-        voices_config = tts_config.load_voices_config()
+        voices_config = config.voices
         if (
             not self.voice_profile
             or self.voice_profile == "NONE"
@@ -255,16 +254,13 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         self.critical_error = None
         self.task_finished = False  # Custom flag for MSG_FINISHED
 
-        # Determine output directory once, pass it to the task
-        output_dir = tts_config.get_default_output_dir()
-
         # --- Submit Task to Executor ---
         # Note: We pass the stop_event and the pre-determined output_dir to the task function
         self.future = self.executor.submit(
             background_synthesis_task,
             handler_instance,
             self.selected_sequences,
-            output_dir,  # Pass the determined output_dir
+            config.default_output_dir,  # Pass the determined output_dir
             self.message_queue,
             self.stop_event,  # Pass the stop event
         )

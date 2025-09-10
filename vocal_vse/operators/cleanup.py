@@ -1,7 +1,6 @@
 import bpy
 import os
-from ..core import config as tts_config
-from ..core import file_manager  # Or import functions
+from ..core import config, file_manager  # Or import functions
 
 
 class VSE_OT_cleanup_narration_files(bpy.types.Operator):
@@ -14,7 +13,7 @@ class VSE_OT_cleanup_narration_files(bpy.types.Operator):
 
     def execute(self, context):
         prefs = context.preferences.addons[__name__.split(".")[0]].preferences
-        output_dir = tts_config.get_default_output_dir()
+        output_dir = config.default_output_dir
 
         if not os.path.exists(output_dir):
             self.report({"INFO"}, "Output directory does not exist.")

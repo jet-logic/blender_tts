@@ -25,6 +25,7 @@ else:
     from .operators.cleanup import VSE_OT_cleanup_narration_files
     from .operators.copy_path import VSE_OT_copy_audio_path
     from .operators.export_list import VSE_OT_export_narration_list
+    from .operators.reload_voices import VOCAL_OT_reload_voices_config
     from .ui.panel import SEQUENCER_PT_tts_panel
     from .ui.preferences import VocalVSEPreferences
 
@@ -35,6 +36,7 @@ else:
         VSE_OT_cleanup_narration_files,
         VSE_OT_copy_audio_path,
         VSE_OT_export_narration_list,
+        VOCAL_OT_reload_voices_config,
         SEQUENCER_PT_tts_panel,
         VocalVSEPreferences,
     ]

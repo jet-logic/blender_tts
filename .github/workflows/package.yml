@@ -61,6 +61,9 @@ jobs:
           blender --background --python-expr "
           import bpy
           from vocal_vse.tts.gtts import Synthesizer
-          from vocal_vse.core.config import load_voices_config
-          print('load_voices_config', load_voices_config())
+          from vocal_vse.core import configuration
+          print(configuration.config_dir)
+          print(configuration.voices_config_path)
+          print(configuration.default_output_dir)
+          print(configuration.voices)
           "

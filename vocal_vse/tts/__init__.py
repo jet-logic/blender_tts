@@ -19,7 +19,7 @@ class SynthesizerBase(abc.ABC):
     @abc.abstractmethod
     def is_available(self) -> bool:
         """Check if the handler's dependencies are installed."""
-        pass
+        return True
 
     def __getattr__(self, name):
         f = not name.startswith("_get_") and getattr(self, f"_get_{name}", None)

@@ -46,10 +46,6 @@ class Config:
         return os.path.join(self.config_dir, "voices.toml")
 
     def _get_default_output_dir(self):
-        """Get the default output directory for audio files.
-        Tries to use a '_vocal_vse' folder next to the .blend file.
-        Falls back to ~/.cache/vocal_vse if the blend file is unsaved.
-        """
         blend_filepath = None
         try:
             import bpy
@@ -63,7 +59,11 @@ class Config:
         if blend_filepath:
             # Blend file is saved, use directory next to it
             blend_dir = os.path.dirname(blend_filepath)
-            narrations_dir = os.path.join(blend_dir, "_vocal_vse")
+            # narrations_dir = os.path.join(blend_dir, "_vocal_vse")
+            narrations_dir = os.path.join(
+                blend_dir,
+                f"{os.path.splitext(os.path.basename(blend_filepath))[0]}_narrations",
+            )
             try:
                 os.makedirs(narrations_dir, exist_ok=True)
                 logger.info(f"Using project-specific output dir: {narrations_dir}")
@@ -79,7 +79,7 @@ class Config:
             cache_dir = os.path.join(home, "AppData", "Local", "cache")
         else:
             cache_dir = os.path.join(home, ".cache")
-        narrations_dir = os.path.join(cache_dir, "vocal_vse")
+        narrations_dir = os.path.join(cache_dir, "narrations")
         os.makedirs(narrations_dir, exist_ok=True)
         logger.info(f"Using fallback cache output dir: {narrations_dir}")
         return narrations_dir
@@ -144,10 +144,10 @@ class Config:
         handler_params = entry.get("params", {})
         handler_instance = SynthesizerClass(**handler_params)
 
-        # if not handler_instance.is_available():
-        #     raise RuntimeError(
-        #         f"Synthesizer '{synthesizer_spec}' is not available. Please check dependencies (e.g., install required library).",
-        #     )
+        if not handler_instance.is_available():
+            raise RuntimeError(
+                f"Synthesizer '{synthesizer_spec}' is not available. Please check dependencies (e.g., install required library).",
+            )
         return handler_instance
 
 

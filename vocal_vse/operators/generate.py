@@ -168,54 +168,11 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         ):
             self.report({"ERROR"}, "Invalid or no voice profile selected.")
             return {"CANCELLED"}
-
-        selected_voice_config = voices_config[self.voice_profile].copy()
-        synthesizer_spec = selected_voice_config.pop("synthesizer", None)
-        if not synthesizer_spec:
-            self.report(
-                {"ERROR"},
-                f"Synthesizer not specified for voice profile '{self.voice_profile}'.",
-            )
-            return {"CANCELLED"}
-
-        # --- Initialize Synthesizer ---
-        handler_instance = None
         try:
-            # --- Parse synthesizer spec ---
-            # Format: "module_name:ClassName" or ".relative_module:ClassName"
-            if ":" in synthesizer_spec:
-                module_part, class_part = synthesizer_spec.rsplit(":", 1)
-            else:
-                # Fallback if format is incorrect or old, assume Handler class
-                # This helps with backward compatibility if needed, though spec requires :
-                self.report(
-                    {"ERROR"},
-                    f"Invalid synthesizer spec '{synthesizer_spec}' for profile '{self.voice_profile}'. Expected format 'module:ClassName'.",
-                )
-                return {"CANCELLED"}
-
-            if module_part.startswith("."):
-                handler_module_name = f"vocal_vse.tts{module_part}"
-            else:
-                handler_module_name = synthesizer_spec
-
-            # --- Import and Instantiate ---
-
-            handler_module = importlib.import_module(handler_module_name)
-            SynthesizerClass = getattr(handler_module, class_part)
-            handler_params = selected_voice_config.get("params", {})
-            handler_instance = SynthesizerClass(**handler_params)
-
-            if not handler_instance.is_available():
-                self.report(
-                    {"ERROR"},
-                    f"Synthesizer '{synthesizer_spec}' is not available. Please check dependencies (e.g., install required library).",
-                )
-                return {"CANCELLED"}
-
+            handler_instance = config.get_voice(self.voice_profile)
         except Exception as e:
             self.report(
-                {"ERROR"}, f"Error initializing handler '{synthesizer_spec}': {e}"
+                {"ERROR"}, f"Error initializing handler '{self.voice_profile}': {e}"
             )
             return {"CANCELLED"}
 

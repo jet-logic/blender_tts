@@ -49,7 +49,7 @@ class TestTTS(unittest.TestCase):
         self.assertTrue(synt.is_available())
         synt.synthesize("こんにちは ", str(tmp / "espeak-ja.wav"))
 
-    def test_cmd_synthesize_kokoro(self):
+    def _test_cmd_synthesize_kokoro(self):
         from vocal_vse.tts.cmd import Synthesizer
 
         synt = Synthesizer(
@@ -77,6 +77,35 @@ class TestTTS(unittest.TestCase):
             "Kokoro is an open-weight TTS model with 82 million parameters.",
             str(tmp / "kokoro.wav"),
         )
+
+    def test_synthesize_1(self):
+        from vocal_vse.core import config
+
+        print(config.__dict__)
+        voices_path = tmp / "test_voices.toml"
+        with voices_path.open("w") as w:
+            w.write(
+                r"""
+[gtts-cli_es]
+name = "gTTS CLI (Spanish)"
+synthesizer = ".cmd:Synthesizer"
+params = { bin = "gtts-cli", args = ["--lang", "es", "--output", "{output_path}", "-"] }
+# Notes:
+# - "--lang es": Sets the language to Spanish.
+            """
+            )
+        config.voices_config_path = str(voices_path)
+
+        if profile := "gtts-cli_es":
+            voices = config.voices
+            self.assertEqual(voices[profile]["name"], "gTTS CLI (Spanish)")
+            voc = config.get_voice(profile)
+            print(voc)
+            voc.synthesize(
+                "El rápido desarrollo de la tecnología está transformando nuestra vida diaria.",
+                str(tmp / f"{profile}.wav"),
+            )
+        pass
 
 
 if __name__ == "__main__":

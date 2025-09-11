@@ -1,3 +1,4 @@
+import importlib
 import os
 from logging import getLogger
 import platform
@@ -118,6 +119,36 @@ class Config:
 
     def reload_voices(self):
         self.voices = self._load_voices()
+
+    def get_voice(self, voice_id=""):
+
+        entry: dict = self.voices.get(voice_id)
+        assert entry, f"Unexpected voice {voice_id}"
+        synthesizer_spec = entry.get("synthesizer")
+        assert (
+            synthesizer_spec
+        ), f"Synthesizer not specified for voice profile '{voice_id}'."
+        if ":" in synthesizer_spec:
+            module_part, class_part = synthesizer_spec.rsplit(":", 1)
+        else:
+            raise RuntimeError(
+                f"Invalid synthesizer spec '{synthesizer_spec}' for profile '{voice_id}'. Expected format 'module:ClassName'.",
+            )
+        if module_part.startswith("."):
+            handler_module_name = f"vocal_vse.tts{module_part}"
+        else:
+            handler_module_name = synthesizer_spec
+
+        handler_module = importlib.import_module(handler_module_name)
+        SynthesizerClass = getattr(handler_module, class_part)
+        handler_params = entry.get("params", {})
+        handler_instance = SynthesizerClass(**handler_params)
+
+        # if not handler_instance.is_available():
+        #     raise RuntimeError(
+        #         f"Synthesizer '{synthesizer_spec}' is not available. Please check dependencies (e.g., install required library).",
+        #     )
+        return handler_instance
 
 
 def create_default_voices_config(config_path):

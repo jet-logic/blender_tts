@@ -46,7 +46,6 @@ class VSE_OT_export_narration_list(bpy.types.Operator):
             self.filepath += ".json"
 
         # Determine audio output directory
-        prefs = context.preferences.addons["vocal_vse"].preferences
         audio_output_dir = config.default_output_dir
 
         # Ensure the target directory for the export file exists

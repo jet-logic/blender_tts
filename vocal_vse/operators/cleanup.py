@@ -12,7 +12,6 @@ class VSE_OT_cleanup_narration_files(bpy.types.Operator):
     )
 
     def execute(self, context):
-        prefs = context.preferences.addons[__name__.split(".")[0]].preferences
         output_dir = config.default_output_dir
 
         if not os.path.exists(output_dir):

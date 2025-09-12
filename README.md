@@ -1,8 +1,10 @@
-# Vocal VSE
+**Vocal VSE**: Generate voiceover narration from text strips directly in the Video Sequence Editor (VSE)
 
-Generate voiceover narration from text strips directly in the Video Sequence Editor (VSE) using Vocal VSE
+[![vocal_vse](logo.svg)](https://github.com/jet-logic/vocal_vse/)
 
 🔊 Offline TTS | 🔄 Auto-sync | 🧹 Cleanup | 💾 Cached audio
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B01E8SY7)
 
 ## Features
 

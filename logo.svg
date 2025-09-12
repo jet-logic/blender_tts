@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="180"
+   height="120"
+   viewBox="0 0 60 40"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.8743547"
+     inkscape:cx="173.39301"
+     inkscape:cy="72.558305"
+     inkscape:window-width="1366"
+     inkscape:window-height="700"
+     inkscape:window-x="0"
+     inkscape:window-y="40"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient1646">
+      <stop
+         style="stop-color:#983737;stop-opacity:1;"
+         offset="0"
+         id="stop1644" />
+      <stop
+         style="stop-color:#ffa711;stop-opacity:1;"
+         offset="1"
+         id="stop1642" />
+    </linearGradient>
+    <rect
+       x="250.94002"
+       y="611.89172"
+       width="329.39594"
+       height="173.43834"
+       id="rect242" />
+    <rect
+       x="174.51886"
+       y="300.13474"
+       width="536.22449"
+       height="261.12509"
+       id="rect236" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1646"
+       id="linearGradient3121"
+       x1="5.00212"
+       y1="44.092617"
+       x2="39.056751"
+       y2="44.092617"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(5.2574123,1.3837474)" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-8.2779825,-16.638141)">
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-34.787676,-64.614818)"
+       id="text234"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:85px;font-family:MathJax_Caligraphic;-inkscape-font-specification:'MathJax_Caligraphic, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect236);display:inline;fill:#6699ff;paint-order:markers stroke fill"><tspan
+         x="174.51953"
+         y="377.49111"
+         id="tspan313">Vocal</tspan></text>
+    <path
+       d="m 11.908837,44.14863 v 2.655479 m 5.126002,-3.983224 v 5.310958 m 5.126007,-3.983213 v 2.655479 m 5.126003,-5.310946 v 7.966413 m 5.126004,-11.949637 v 15.93285 m 5.126006,-10.621904 v 5.310958 m 5.126002,-3.983213 v 2.655479"
+       stroke="#000000"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path404"
+       style="fill:#ff6600;stroke:url(#linearGradient3121);stroke-width:3.29861;stroke-dasharray:none" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-21.184198,-125.62318)"
+       id="text240"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48px;font-family:'Ubuntu Sans Mono';-inkscape-font-specification:'Ubuntu Sans Mono, @wght=700';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 700;white-space:pre;shape-inside:url(#rect242);display:inline;fill:#669900;paint-order:markers stroke fill"><tspan
+         x="250.93945"
+         y="655.49258"
+         id="tspan315">VSE</tspan></text>
+  </g>
+</svg>

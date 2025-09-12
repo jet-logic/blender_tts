@@ -3,6 +3,7 @@ import importlib
 import queue
 import concurrent.futures
 import threading
+from time import perf_counter, strftime
 import traceback  # For better error reporting in threads
 from logging import getLogger
 from tempfile import gettempdir
@@ -210,6 +211,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
         self.collected_errors = []
         self.critical_error = None
         self.task_finished = False  # Custom flag for MSG_FINISHED
+        self.started = perf_counter()
 
         # --- Submit Task to Executor ---
         # Note: We pass the stop_event and the pre-determined output_dir to the task function
@@ -225,7 +227,7 @@ class VSE_OT_generate_narration(bpy.types.Operator):
 
         # --- Start Modal Timer ---
         # This will call modal() every 0.1 seconds to check progress
-        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+        self._timer = context.window_manager.event_timer_add(0.4, window=context.window)
         context.window_manager.modal_handler_add(self)
 
         self.report(
@@ -394,6 +396,11 @@ class VSE_OT_generate_narration(bpy.types.Operator):
                 # --------------------------
 
                 return {"FINISHED"}  # Modal operator finished
+            t = perf_counter() - self.started
+            self.report(
+                {"INFO"},
+                f"Vocal VSE: Generating ({t:.2f}s)",
+            )
 
         # --- Handle User Cancellation (ESC) ---
         elif event.type in {"ESC"}:
